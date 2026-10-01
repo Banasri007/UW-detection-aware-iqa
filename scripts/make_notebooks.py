@@ -112,8 +112,7 @@ NB04 = [
         "!python scripts/get_enhancers.py"),
     (C, "# Visual sanity check: raw vs every enhancer on 3 held-out images\n"
         "%run scripts/show_enhancers.py --n 3 --deep funiegan"),
-    (M, "### Full labelling (~1.6 h on T4) — run with **Save Version → Save & Run All (Commit)**
-"
+    (M, "### Full labelling (~1.6 h on T4) — run with **Save Version → Save & Run All (Commit)**\n"
         "Measured speed: 0.5 s/image. Shards are resumable: if a commit is interrupted, attach that version's "
         "output as an extra input and commit again; finished shards are restored by cell 1 and skipped."),
     (C, "# RUOD pred_train + pred_val + pred_test (7,000 images)\n"
