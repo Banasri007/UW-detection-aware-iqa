@@ -1,0 +1,42 @@
+# Dataset roots and manifest builders. Paths are relative to DATA_ROOT
+# (env var; defaults to ./data). On Colab point DATA_ROOT at your Drive.
+#
+# builder: uieb | euvp_test | table
+# For `table` datasets, open the download, then fill in the TODOs below.
+# Run:  python scripts/build_manifests.py --only <name>
+
+uieb:
+  root: UIEB
+  builder: uieb
+
+euvp_test:
+  root: EUVP
+  builder: euvp_test
+
+uid2021:            # Hou et al., ACM TOMM 2023 — 960 imgs, 52 observers
+  root: UID2021
+  builder: table
+  table: TODO_mos_file.xlsx     # TODO: inspect release
+  image_col: TODO
+  mos_col: TODO
+  image_dir: TODO
+  scene_regex: null             # e.g. "^(\\d+)_"
+  method_regex: null
+
+saud:               # Jiang et al., IEEE TCSVT 2022 — 100 raw + 1000 enhanced
+  root: SAUD
+  builder: table
+  table: TODO
+  image_col: TODO
+  mos_col: TODO
+  image_dir: TODO
+  scene_regex: null
+  method_regex: null
+
+uwiqa:              # 890 raw UIEB images, coarse ~10-level MOS — handle with care
+  root: UWIQA
+  builder: table
+  table: TODO
+  image_col: TODO
+  mos_col: TODO
+  image_dir: TODO
