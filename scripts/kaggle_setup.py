@@ -53,3 +53,24 @@ os.environ["UID2021_ROOT"] = found["UID2021"] = uid[0] if uid else f"{os.environ
 for k, v in found.items():
     print(f"{k:8s} {v}  {'(ok)' if os.path.exists(v) else '(not present yet)'}")
 print("RESULTS ", os.environ["RESULTS_ROOT"])
+
+# Restore outputs of earlier notebooks attached as inputs (Add Input -> Your Work -> notebook):
+# every file under their results/ is copied in unless it already exists here, so splits,
+# detector weights and finished label shards carry over and long jobs resume.
+import shutil  # noqa: E402
+
+prev = [d for depth in range(1, 6)
+        for d in glob.glob("/kaggle/input/" + "*/" * depth + "results") if os.path.isdir(d)]
+for src_root in prev:
+    n = 0
+    for dirpath, _, files in os.walk(src_root):
+        for f in files:
+            src = os.path.join(dirpath, f)
+            dst = os.path.join(os.environ["RESULTS_ROOT"], os.path.relpath(src, src_root))
+            if not os.path.exists(dst):
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copy2(src, dst)
+                n += 1
+    print(f"restored {n} files from {src_root}")
+best = os.path.join(os.environ["RESULTS_ROOT"], "detector/raw_yolo11s/weights/best.pt")
+print("detector", best, "(ok)" if os.path.exists(best) else "(not present: attach notebook 03's output)")

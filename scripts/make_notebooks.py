@@ -96,9 +96,38 @@ NB03 = [
         "!python scripts/train_detector.py"),
 ]
 
+NB04 = [
+    (M, "# 04 — Per-image detection-utility labels (O3, part 2)\n\n"
+        "**Settings:** Accelerator **GPU T4 x2**, Internet **On**.\n"
+        "**Inputs (Add Input):**\n"
+        "1. *Underwater Domain in ODverse33* (skycol)\n"
+        "2. **Your Work → notebook 03** (the committed version with the trained detector). Cell 1 copies its "
+        "`results/` (splits + `best.pt`) into `/kaggle/working/results`.\n\n"
+        "For every held-out image: resize to 1280 px (long side), apply each enhancer in memory, run the frozen "
+        "detector, and score per-image AP / AP50 / F1. `raw` is the baseline; `null_jpeg95` (an invisible JPEG "
+        "re-encode) measures label noise. All detections are saved so selective-enhancement policies can be "
+        "evaluated later without re-running the detector.\n" + PERSIST),
+    (C, setup("detect")),
+    (C, "# Official FUnIE-GAN code + PyTorch weights (28 MB, ship inside its GitHub repo)\n"
+        "!python scripts/get_enhancers.py"),
+    (C, "# Visual sanity check: raw vs every enhancer on 3 held-out images\n"
+        "%run scripts/show_enhancers.py --n 3 --deep funiegan"),
+    (M, "### Smoke test (~5 min)\nCheck the s/img and ETA it prints, and that `raw` per-image AP looks sensible "
+        "(the detector's held-out mAP50-95 was 0.556)."),
+    (C, "!python scripts/build_utility_labels.py --set ruod_pred_test --limit 40 --deep funiegan --tag smoke"),
+    (M, "### Full labelling — run with **Save Version → Save & Run All (Commit)**\n"
+        "Shards are resumable: if a commit times out, attach that version's output as an extra input and commit "
+        "again; finished shards are restored by cell 1 and skipped."),
+    (C, "# RUOD pred_train + pred_val + pred_test (7,000 images)\n"
+        "!python scripts/build_utility_labels.py --set ruod_pred --deep funiegan"),
+    (C, "# Duplicate-free DUO (4,539 images), cross-dataset labels for O5\n"
+        "!python scripts/build_utility_labels.py --set duo_clean --deep funiegan"),
+]
+
 if __name__ == "__main__":
     for name, cells, acc in [("01_kaggle_benchmark_uid2021.ipynb", NB01, "gpu"),
-                             ("03_kaggle_splits_and_detector.ipynb", NB03, "gpu")]:
+                             ("03_kaggle_splits_and_detector.ipynb", NB03, "gpu"),
+                             ("04_kaggle_utility_labels.ipynb", NB04, "gpu")]:
         p = NB_DIR / name
         json.dump(nb(cells, acc), open(p, "w", encoding="utf-8"), indent=1)
         print("wrote", p)

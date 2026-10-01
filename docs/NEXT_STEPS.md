@@ -53,6 +53,23 @@ Consequences, stated honestly in the write-up:
 4. Enhanced outputs stay in memory, so no extra JPEG generation. Enhancers will amplify RUOD's q≈85 block artefacts; that is part of the real effect, so leave the inputs as they are.
 5. Null-enhancement noise floor: also score a JPEG-q95 re-encode of each raw image to estimate label noise (improvement #4 below).
 
+## Reference detector — trained (notebook 03 commit, 2026-10-01)
+YOLO11-s, 640 px, 100 epochs on `det_train` (6,300 images), 1.97 h on 2×T4; converged (val flat over the last epochs).
+
+| set | images | mAP50 | mAP50-95 |
+|---|---|---|---|
+| det_val | 700 | 0.811 | 0.569 |
+| RUOD pred_test (held out) | 1,400 | 0.798 | 0.556 |
+| DUO clean (cross-dataset, classes 0–3) | 4,539 | 0.639 | 0.387 |
+
+- Held-out ≈ val, so no overfitting through the split. Weakest RUOD classes: corals (0.56 mAP50) and jellyfish (0.59).
+- DUO drop is mostly echinus recall (0.54; ~9 small urchins per image). Precision stays high (0.96).
+
+## O3 labelling — implemented (notebook 04)
+- `scripts/build_utility_labels.py`: per image, enhancers applied in memory at 1280 px, then the frozen detector; per-image AP / AP50 / F1 for `raw`, `null_jpeg95`, clahe, gray_world, udcp, fusion and FUnIE-GAN. All detections are saved for offline policy evaluation.
+- `uwiqa.detect.metrics`: COCO-style per-image AP and dataset mAP. Verified against Ultralytics on identical predictions (Δ ≤ 0.005 mAP; the residual is the interpolation scheme).
+- Deep enhancers: FUnIE-GAN uses the official repo code and weights. U-shape Transformer and PUIE-Net (PyTorch, Google Drive weights) are possible additions. Water-Net and Ucolor are TF1-only, so they were dropped as infeasible.
+
 ## Kaggle workflow
 Imported notebooks are frozen copies, so all logic lives in the repo. The first cell of every notebook is
 `%run /kaggle/working/repo/scripts/kaggle_setup.py`, which resets the clone to `origin/main`, reinstalls, and
