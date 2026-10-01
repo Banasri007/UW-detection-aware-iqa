@@ -158,17 +158,41 @@ def _extract(regex, s, default):
     return m.group(1) if m else default
 
 
+def load_config() -> dict:
+    """configs/datasets.yaml, overlaid per dataset with configs/local.yaml.
+
+    local.yaml is git-ignored: put machine/session-specific values there
+    (e.g. UID2021's MOS column names) so `git pull` never conflicts.
+    """
+    import yaml
+    from uwiqa import PROJECT_ROOT
+    cfg = yaml.safe_load(open(PROJECT_ROOT / "configs" / "datasets.yaml"))
+    local = PROJECT_ROOT / "configs" / "local.yaml"
+    if local.exists():
+        for name, over in (yaml.safe_load(open(local)) or {}).items():
+            cfg.setdefault(name, {}).update(over or {})
+    return cfg
+
+
+def set_local_config(name: str, **values) -> None:
+    """Persist overrides for one dataset into configs/local.yaml."""
+    import yaml
+    from uwiqa import PROJECT_ROOT
+    local = PROJECT_ROOT / "configs" / "local.yaml"
+    cur = (yaml.safe_load(open(local)) or {}) if local.exists() else {}
+    cur.setdefault(name, {}).update(values)
+    yaml.safe_dump(cur, open(local, "w"), sort_keys=False)
+
+
 def dataset_root(name: str) -> Path:
-    """$<NAME>_ROOT if set, else DATA_ROOT / <root from configs/datasets.yaml>."""
+    """$<NAME>_ROOT if set, else DATA_ROOT / <root from the config>."""
     import os
 
-    import yaml
-    from uwiqa import DATA_ROOT, PROJECT_ROOT
+    from uwiqa import DATA_ROOT
     env = os.environ.get(f"{name.upper()}_ROOT")
     if env:
         return Path(env)
-    cfg = yaml.safe_load(open(PROJECT_ROOT / "configs" / "datasets.yaml"))
-    return DATA_ROOT / cfg[name]["root"]
+    return DATA_ROOT / load_config()[name]["root"]
 
 
 def manifest_path(name: str) -> Path:

@@ -1,4 +1,5 @@
-"""Build $MANIFEST_ROOT/<name>.csv (default results/manifests/) for every dataset in configs/datasets.yaml.
+"""Build $MANIFEST_ROOT/<name>.csv (default results/manifests/) for every dataset
+in configs/datasets.yaml (+ configs/local.yaml overrides).
 
     python scripts/build_manifests.py            # all datasets that exist
     python scripts/build_manifests.py --only uid2021
@@ -6,21 +7,18 @@
 import argparse
 import sys
 
-import yaml
-
-from uwiqa import MANIFEST_ROOT, PROJECT_ROOT
-from uwiqa.data import build_euvp_test, build_uieb, build_yolo, dataset_root, from_table
+from uwiqa import MANIFEST_ROOT
+from uwiqa.data import build_euvp_test, build_uieb, build_yolo, dataset_root, from_table, load_config
 
 BUILDERS = {"uieb": build_uieb, "euvp_test": build_euvp_test, "yolo": build_yolo}
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--config", default=PROJECT_ROOT / "configs" / "datasets.yaml")
     ap.add_argument("--only", nargs="*")
     args = ap.parse_args()
 
-    cfg = yaml.safe_load(open(args.config))
+    cfg = load_config()
     out_dir = MANIFEST_ROOT
     out_dir.mkdir(parents=True, exist_ok=True)
     ok = True

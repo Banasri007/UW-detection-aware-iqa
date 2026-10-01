@@ -1,0 +1,104 @@
+"""Regenerate the Kaggle notebooks in notebooks/.
+
+The notebooks are deliberately thin: one setup cell (pulls the latest code)
+plus one-line commands. All logic lives in scripts/ and src/, so importing a
+notebook into Kaggle once is enough; later fixes arrive by re-running cell 1.
+
+    python scripts/make_notebooks.py
+"""
+import json
+from pathlib import Path
+
+NB_DIR = Path(__file__).resolve().parents[1] / "notebooks"
+CLONE = ("!test -d /kaggle/working/repo || git clone -q "
+         "https://github.com/Banasri007/UW-detection-aware-iqa.git /kaggle/working/repo")
+PERSIST = """
+**Kaggle tips**
+- Re-running cell 1 always pulls the latest code from GitHub. You never need to re-import this notebook.
+- `/kaggle/working` is wiped when a session ends unless you commit (**Save Version → Save & Run All**)
+  or enable **Settings → Persistence → Files**.
+"""
+
+
+def setup(extras=""):
+    return f"{CLONE}\n%run /kaggle/working/repo/scripts/kaggle_setup.py {extras}".rstrip()
+
+
+def nb(cells, accelerator):
+    out = []
+    for kind, src in cells:
+        src = src.strip("\n")
+        lines = [l + "\n" for l in src.split("\n")]
+        lines[-1] = lines[-1].rstrip("\n")
+        c = {"cell_type": kind, "metadata": {}, "source": lines}
+        if kind == "code":
+            c.update(execution_count=None, outputs=[])
+        out.append(c)
+    return {"cells": out, "metadata": {
+        "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+        "language_info": {"name": "python"},
+        "kaggle": {"accelerator": accelerator, "isInternetEnabled": True}},
+        "nbformat": 4, "nbformat_minor": 5}
+
+
+M, C = "markdown", "code"
+
+NB01 = [
+    (M, "# 01 — NR-IQA benchmark on UID2021 (O1 + O2)\n\n"
+        "**Settings:** Accelerator **GPU T4 x2** or **P100**, Internet **On**.\n" + PERSIST),
+    (C, setup("iqa")),
+    (C, "# Download UID2021 (skips if already present or attached as a Kaggle Dataset)\n"
+        "!python scripts/get_uid2021.py"),
+    (C, "# Show image folders and every score table with its columns\n"
+        "from uwiqa.data import dataset_root, inspect_dataset\n"
+        "inspect_dataset(dataset_root(\"uid2021\"))"),
+    (M, "**Fill in the three values below from the output above.** They are saved to the untracked "
+        "`configs/local.yaml`, so code updates never overwrite them."),
+    (C, "from uwiqa.data import set_local_config\n"
+        "set_local_config(\"uid2021\",\n"
+        "    table=\"TODO\",      # MOS file path relative to the dataset root\n"
+        "    image_col=\"TODO\",  # column with image names\n"
+        "    mos_col=\"TODO\")    # column with MOS\n"
+        "!python scripts/build_manifests.py --only uid2021"),
+    (C, "# Check every metric loads on the GPU (downloads pretrained weights once)\n"
+        "!python scripts/check_env.py"),
+    (C, "# Score all 960 images with every metric (resumable), ~30-60 min\n"
+        "!python scripts/score_metrics.py --dataset uid2021"),
+    (C, "# O1 table + Week-4 gate verdict\n!python scripts/benchmark.py --dataset uid2021"),
+    (C, "# O2 over-enhancement stress test on the 60 raw images\n"
+        "!python scripts/stress_test.py --dataset uid2021 --metrics uiqm uciqe topiq_nr liqe musiq uranker"),
+]
+
+NB03 = [
+    (M, "# 03 — Leakage-safe splits + reference detector (O3, part 1)\n\n"
+        "**Settings:** Accelerator **GPU T4 x2** (DDP is used automatically), Internet **On**.\n"
+        "**Input:** *Underwater Domain in ODverse33* (skycol).\n" + PERSIST),
+    (C, setup("detect")),
+    (C, "!python scripts/build_manifests.py --only ruod duo"),
+    (M, "### 1. Duplicate threshold\n"
+        "Notebook 02 showed that pairs at d=20 are still the same video scene, so we search wider (32/256) "
+        "and look at the band just above 20. Hashes are cached, so this takes ~3 min if notebook 02's "
+        "`results/dedup` is present, ~10 min otherwise."),
+    (C, "!python scripts/find_duplicates.py --datasets ruod duo --max-dist 32"),
+    (C, "%run scripts/show_pairs.py --min-dist 21 --max-dist 26 --leaky-only --n 6"),
+    (C, "%run scripts/show_pairs.py --min-dist 27 --max-dist 32 --leaky-only --n 6"),
+    (M, "If the 27–32 pairs are still the same scene, keep 32. If they are different scenes, "
+        "re-run the duplicate cell with the largest distance that still looked like a duplicate."),
+    (M, "### 2. Leakage-safe splits"),
+    (C, "!python scripts/make_splits.py"),
+    (M, "### 3. Reference detector (YOLO11-s on raw RUOD `det_train`)\n"
+        "Run the smoke test first (~5 min). For the full run, use **Save Version → Save & Run All**: "
+        "roughly 3–5 h on T4 x2. If it times out, attach this notebook's output as input, copy "
+        "`results/detector` back to `/kaggle/working/results/`, and re-run: training resumes from `last.pt`."),
+    (C, "# Smoke test: 5% of det_train, 2 epochs\n"
+        "!python scripts/train_detector.py --epochs 2 --fraction 0.05 --name smoke"),
+    (C, "# Full training + held-out evaluation on RUOD pred_test and duplicate-free DUO\n"
+        "!python scripts/train_detector.py"),
+]
+
+if __name__ == "__main__":
+    for name, cells, acc in [("01_kaggle_benchmark_uid2021.ipynb", NB01, "gpu"),
+                             ("03_kaggle_splits_and_detector.ipynb", NB03, "gpu")]:
+        p = NB_DIR / name
+        json.dump(nb(cells, acc), open(p, "w", encoding="utf-8"), indent=1)
+        print("wrote", p)
