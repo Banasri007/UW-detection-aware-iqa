@@ -112,12 +112,10 @@ NB04 = [
         "!python scripts/get_enhancers.py"),
     (C, "# Visual sanity check: raw vs every enhancer on 3 held-out images\n"
         "%run scripts/show_enhancers.py --n 3 --deep funiegan"),
-    (M, "### Smoke test (~5 min)\nCheck the s/img and ETA it prints, and that `raw` per-image AP looks sensible "
-        "(the detector's held-out mAP50-95 was 0.556)."),
-    (C, "!python scripts/build_utility_labels.py --set ruod_pred_test --limit 40 --deep funiegan --tag smoke"),
-    (M, "### Full labelling — run with **Save Version → Save & Run All (Commit)**\n"
-        "Shards are resumable: if a commit times out, attach that version's output as an extra input and commit "
-        "again; finished shards are restored by cell 1 and skipped."),
+    (M, "### Full labelling (~1.6 h on T4) — run with **Save Version → Save & Run All (Commit)**
+"
+        "Measured speed: 0.5 s/image. Shards are resumable: if a commit is interrupted, attach that version's "
+        "output as an extra input and commit again; finished shards are restored by cell 1 and skipped."),
     (C, "# RUOD pred_train + pred_val + pred_test (7,000 images)\n"
         "!python scripts/build_utility_labels.py --set ruod_pred --deep funiegan"),
     (C, "# Duplicate-free DUO (4,539 images), cross-dataset labels for O5\n"

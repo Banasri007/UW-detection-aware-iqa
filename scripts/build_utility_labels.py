@@ -131,7 +131,7 @@ def main():
             names = list(variants)
             bgr = [np.ascontiguousarray(v[:, :, ::-1]) for v in variants.values()]
             res = det.predict(bgr, imgsz=args.imgsz, conf=args.conf,
-                              max_det=300, device=device, half=device == 0, verbose=False, classes=classes)
+                              max_det=300, device=device, verbose=False, classes=classes)
             for m, r in zip(names, res):
                 b = r.boxes
                 p = Dets(b.xyxyn.cpu().numpy(), b.cls.cpu().numpy().astype(int), b.conf.cpu().numpy())

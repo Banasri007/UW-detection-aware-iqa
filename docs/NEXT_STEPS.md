@@ -70,6 +70,13 @@ YOLO11-s, 640 px, 100 epochs on `det_train` (6,300 images), 1.97 h on 2×T4; con
 - `uwiqa.detect.metrics`: COCO-style per-image AP and dataset mAP. Verified against Ultralytics on identical predictions (Δ ≤ 0.005 mAP; the residual is the interpolation scheme).
 - Deep enhancers: FUnIE-GAN uses the official repo code and weights. U-shape Transformer and PUIE-Net (PyTorch, Google Drive weights) are possible additions. Water-Net and Ucolor are TF1-only, so they were dropped as infeasible.
 
+### Smoke test (40 RUOD pred_test images, 2026-10-02)
+- 0.50 s/image on T4 → ~1 h for ruod_pred (7,000) + ~40 min for duo_clean (4,539).
+- Raw dataset mAP at 1280 px work size: 0.794 / 0.563 (native-resolution Ultralytics eval: 0.798 / 0.556), so the resizing protocol does not change the detector's behaviour.
+- **Noise floor is small:** null_jpeg95 Δap = −0.001 ± 0.033.
+- **Every enhancer hurts on average** (mean Δap: clahe −0.05, udcp −0.07, funiegan −0.10, fusion −0.13, gray_world −0.14), **but each helps on 12–22% of images.** The per-image signal is non-degenerate (the Week-8 pivot rule is not triggered), and blanket enhancement is worse than none. This matches Wang et al. 2024 and Saleem et al. 2025.
+- Caveat for the write-up: the detector was trained on raw images, so enhanced inputs are slightly out-of-distribution for it (protocol (a) in the handoff). Protocol (b), a detector trained with enhancement augmentation, is the sensitivity check.
+
 ## Kaggle workflow
 Imported notebooks are frozen copies, so all logic lives in the repo. The first cell of every notebook is
 `%run /kaggle/working/repo/scripts/kaggle_setup.py`, which resets the clone to `origin/main`, reinstalls, and

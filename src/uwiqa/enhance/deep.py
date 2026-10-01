@@ -33,7 +33,8 @@ def wrap_tanh_generator(net: torch.nn.Module, device, multiple: int = 32,
 
     @torch.no_grad()
     def run(img: np.ndarray) -> np.ndarray:
-        x = torch.from_numpy(np.ascontiguousarray(img)).to(device).permute(2, 0, 1)[None].float()
+        x = torch.from_numpy(np.array(img, copy=True)).to(device)  # copy: input may be read-only
+        x = x.permute(2, 0, 1)[None].float()
         x = x / 127.5 - 1
         H, W = x.shape[-2:]
         ph, pw = (-H) % multiple, (-W) % multiple
