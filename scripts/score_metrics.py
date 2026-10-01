@@ -14,7 +14,7 @@ import time
 import pandas as pd
 from tqdm import tqdm
 
-from uwiqa import DATA_ROOT, RESULTS_ROOT
+from uwiqa import RESULTS_ROOT
 from uwiqa.data import dataset_root, load_manifest
 from uwiqa.metrics.registry import DEFAULT_METRICS, MetricRunner
 
@@ -30,7 +30,7 @@ def main():
     ap.add_argument("--limit", type=int, default=None, help="debug: first N images")
     args = ap.parse_args()
 
-    man = load_manifest(DATA_ROOT / "manifests" / f"{args.dataset}.csv")
+    man = load_manifest(args.dataset)
     root = dataset_root(args.dataset)
     images = man["image"].tolist()[: args.limit]
 

@@ -1,42 +1,27 @@
-# Dataset roots and manifest builders. Paths are relative to DATA_ROOT
-# (env var; defaults to ./data). On Colab point DATA_ROOT at your Drive.
+# Core datasets: ONE subjective (MOS) dataset + ONE detection dataset.
+# Paths are relative to DATA_ROOT, or set <NAME>_ROOT (e.g. UID2021_ROOT) to
+# an absolute path — handy on Kaggle where inputs live in /kaggle/input/<slug>.
 #
-# builder: uieb | euvp_test | table
-# For `table` datasets, open the download, then fill in the TODOs below.
-# Run:  python scripts/build_manifests.py --only <name>
+# builder: table | detection | uieb | euvp_test
+# Run:  python scripts/build_manifests.py --only uid2021
 
-uieb:
-  root: UIEB
-  builder: uieb
-
-euvp_test:
-  root: EUVP
-  builder: euvp_test
-
-uid2021:            # Hou et al., ACM TOMM 2023 — 960 imgs, 52 observers
-  root: UID2021
+uid2021:            # O1 + O2. Hou et al., ACM TOMM 2023. 60 raw + 900 enhanced (15 methods), MOS from 77 observers
+  root: UID2021     # names: SI_B_1 (raw), ERI_B_1_HP (enhanced, method HP); subsets B, BG, G, H, LL, T
   builder: table
-  table: TODO_mos_file.xlsx     # TODO: inspect release
-  image_col: TODO
-  mos_col: TODO
-  image_dir: TODO
-  scene_regex: null             # e.g. "^(\\d+)_"
-  method_regex: null
+  table: TODO       # run uwiqa.data.inspect_dataset(root) and copy the MOS file's relative path here
+  image_col: TODO   # column holding the image name
+  mos_col: TODO     # column holding the MOS
+  image_dir: auto   # find images by file stem anywhere under root
+  scene_regex: "^(?:SI|ERI)_([A-Za-z]+_\\d+)"
+  method_regex: "^ERI_[A-Za-z]+_\\d+_(.+)$"
+  method_default: raw
 
-saud:               # Jiang et al., IEEE TCSVT 2022 — 100 raw + 1000 enhanced
-  root: SAUD
-  builder: table
-  table: TODO
-  image_col: TODO
-  mos_col: TODO
-  image_dir: TODO
-  scene_regex: null
-  method_regex: null
+ruod:               # O3 + O4. Fu et al., Neurocomputing 2023. Manifest built in the detection stage.
+  root: RUOD
+  builder: detection
 
-uwiqa:              # 890 raw UIEB images, coarse ~10-level MOS — handle with care
-  root: UWIQA
-  builder: table
-  table: TODO
-  image_col: TODO
-  mos_col: TODO
-  image_dir: TODO
+# Optional second MOS dataset (only if time allows; inference-only, ~1 h on Kaggle):
+# saud:
+#   root: SAUD
+#   builder: table
+#   ...

@@ -1,3 +1,5 @@
-from .manifests import build_euvp_test, build_uieb, dataset_root, from_table, load_manifest
+from .manifests import (build_euvp_test, build_uieb, dataset_root, from_table, inspect_dataset,
+                        load_manifest, manifest_path)
 
-__all__ = ["build_euvp_test", "build_uieb", "dataset_root", "from_table", "load_manifest"]
+__all__ = ["build_euvp_test", "build_uieb", "dataset_root", "from_table", "inspect_dataset",
+           "load_manifest", "manifest_path"]

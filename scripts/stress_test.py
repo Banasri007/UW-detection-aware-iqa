@@ -4,7 +4,7 @@ Samples N raw images from a manifest, applies each sweep at increasing
 strength, scores every variant, and reports per-metric inflation
 (Spearman of score vs strength, fraction of increasing steps).
 
-    python scripts/stress_test.py --dataset uieb --n 50 --metrics uiqm uciqe topiq_nr liqe
+    python scripts/stress_test.py --dataset uid2021 --metrics uiqm uciqe topiq_nr liqe
 """
 import argparse
 import tempfile
@@ -15,7 +15,7 @@ import pandas as pd
 from PIL import Image
 from tqdm import tqdm
 
-from uwiqa import DATA_ROOT, RESULTS_ROOT
+from uwiqa import RESULTS_ROOT
 from uwiqa.data import dataset_root, load_manifest
 from uwiqa.enhance import DEFAULT_STRENGTHS, SWEEPS, monotonic_inflation
 from uwiqa.metrics.registry import MetricRunner, load_rgb
@@ -23,15 +23,15 @@ from uwiqa.metrics.registry import MetricRunner, load_rgb
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset", default="uieb")
+    ap.add_argument("--dataset", default="uid2021")
     ap.add_argument("--method", default="raw", help="which manifest rows to sample")
-    ap.add_argument("--n", type=int, default=50)
+    ap.add_argument("--n", type=int, default=60)
     ap.add_argument("--metrics", nargs="*", default=["uiqm", "uciqe", "topiq_nr", "liqe", "musiq"])
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--save-images", action="store_true", help="keep variants (for a 2AFC study)")
     args = ap.parse_args()
 
-    man = load_manifest(DATA_ROOT / "manifests" / f"{args.dataset}.csv")
+    man = load_manifest(args.dataset)
     man = man[man["method"] == args.method]
     sample = man.sample(min(args.n, len(man)), random_state=args.seed)["image"].tolist()
     root = dataset_root(args.dataset)

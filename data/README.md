@@ -1,18 +1,12 @@
 # Data
 
-Nothing in this folder is committed. Put datasets under `DATA_ROOT` (defaults to this folder; on Colab set `DATA_ROOT=/content/drive/MyDrive/uwiqa_data`).
+Nothing in this folder is committed. The project uses **two** datasets:
 
-| Folder | Dataset | Where to get it | Priority |
+| Dataset | Role | Where | Notes |
 |---|---|---|---|
-| `UIEB/` | UIEB (raw-890, reference-890, challenging-60) | https://li-chongyi.github.io/proj_benchmark.html | Week 1 |
-| `EUVP/` | EUVP (need `test_samples/Inp`, `test_samples/GTr`) | https://irvlab.cs.umn.edu/resources/euvp-dataset | Week 1 |
-| `UID2021/` | UID2021 — 60 raw + 900 enhanced, MOS from 52 observers | https://github.com/Hou-Guojia/UID2021 (Drive link in README) | **Week 1, MOS** |
-| `SAUD/` | SAUD — 100 raw + 1,000 enhanced | https://github.com/yia-yuese/SAUD-Dataset | **Week 1, MOS** |
-| `UWIQA/` | UWIQA — 890 raw, coarse MOS | locate via the paper; verify license | Week 1–2, MOS |
-| `RUOD/` | RUOD detection (cite 14,000 imgs / 74,903 objects) | https://github.com/dlut-dimt/RUOD | Week 5–6 |
-| `DUO/` | DUO detection | https://github.com/chongweiliu/DUO | Week 10 |
-| `Brackish/` | Brackish (video frames — split **by sequence**) | Kaggle / Aalborg Univ. VAP | Week 10 |
+| **UID2021** | O1 benchmark + O2 stress test (human MOS) | https://github.com/Hou-Guojia/UID2021 → Google Drive link | 60 raw + 900 enhanced (15 methods), MOS from 77 observers. Non-commercial use; cite Hou et al., ACM TOMM 2023. The Kaggle notebook downloads it automatically. |
+| **RUOD** | O3 utility labels + O4 predictor (detection boxes) | https://github.com/dlut-dimt/RUOD | Cite 14,000 imgs / 74,903 objects (source paper); record which copy you used. Needed from Week 5. |
 
-After downloading a MOS dataset, open its score file, fill in the `TODO`s in `configs/datasets.yaml`, and run `python scripts/build_manifests.py --only <name>`.
+Optional, only if time allows: a second MOS dataset (SAUD, https://github.com/yia-yuese/SAUD-Dataset) to show the O1 finding is not dataset-specific, and DUO (https://github.com/chongweiliu/DUO) for cross-dataset detection generalisation.
 
-Record the exact image count you got for RUOD (source paper vs. the 13,112 re-hosted copy) in `docs/NEXT_STEPS.md`.
+Locally, put datasets under `data/<Name>/`. On Kaggle, either let the notebook download them into `/kaggle/working/data`, or attach a Kaggle Dataset and set `UID2021_ROOT` / `RUOD_ROOT` to its `/kaggle/input/...` path.

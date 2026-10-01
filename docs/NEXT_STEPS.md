@@ -4,20 +4,29 @@ Status date: 2026-10-01. Week 1 of 14.
 
 ## Done (handoff §13, steps 1–5)
 - [x] Repo scaffold, installable package `uwiqa`, git initialised
-- [x] `pyiqa` 0.1.16 installs; registry wraps 13 NR metrics + UIQM/UCIQE (weights not yet downloaded — run `scripts/check_env.py` on Colab)
+- [x] `pyiqa` 0.1.16 installs; registry wraps 13 NR metrics + UIQM/UCIQE (weights not yet downloaded — run `scripts/check_env.py` on Kaggle)
 - [x] UIQM: vectorised; tested against a loop port of the reference implementation (exact match)
 - [x] UCIQE: `paper` and `legacy_cv2` variants (ports disagree — this is itself reportable)
 - [x] Manifest format + UIEB/EUVP builders + generic MOS-table builder
 - [x] Correlation harness: SRCC / PLCC (4-param logistic) / KRCC, bootstrap CIs, paired bootstrap test, intra-scene SRCC
 - [x] Classical UIE (CLAHE, gray-world, UDCP, fusion) and O2 sweeps (saturation, contrast, red shift, unsharp)
-- [x] 39 unit tests passing
+- [x] 41 unit tests passing
+- [x] Kaggle notebook `notebooks/01_kaggle_benchmark_uid2021.ipynb`
+
+## Scope decision (2026-10-01): two datasets, Kaggle only
+No single dataset has both human quality scores and detection boxes, so the minimum is one of each:
+- **UID2021** for O1 + O2 (its 60 raw images also serve the stress test, so UIEB/EUVP are dropped)
+- **RUOD** for O3 + O4
+
+Consequences, stated honestly in the write-up:
+- O1 becomes a single-dataset benchmark. Gap 4 ("fragmented subjective datasets") is no longer addressed; drop it from the claims or add SAUD later (~1 h of Kaggle inference).
+- O5 cross-*dataset* generalisation becomes cross-*split* generalisation within RUOD (leakage-safe clusters). Add DUO only if time allows.
 
 ## Immediate next steps (you)
-1. **Download** UIEB, EUVP, UID2021, SAUD (links in `data/README.md`) to Google Drive.
-2. Inspect UID2021/SAUD score files → fill TODOs in `configs/datasets.yaml` → `build_manifests.py`.
-3. On Colab: `check_env.py`, then `score_metrics.py` for each MOS dataset, then `benchmark.py`.
-4. **Week-4 gate:** TOPIQ_NR SRCC ≳ 0.7 on ≥1 dataset.
-5. Run `stress_test.py` on UIEB raw images (O2).
+1. Import the notebook into Kaggle (GPU, Internet on), run cells 1–4.
+2. From the `inspect_dataset` output, fill the three values in cell 5.
+3. Run the rest: `check_env`, scoring, benchmark (prints the **Week-4 gate**: TOPIQ_NR SRCC ≳ 0.7), stress test.
+4. Meanwhile, get RUOD onto Kaggle (search Kaggle Datasets for a mirror, or upload it) for Week 5.
 
 ## Then (Weeks 5–8, built after the gate)
 - `enhance/deep.py`: wrappers for pretrained Water-Net, FUnIE-GAN, Ucolor, U-shape Transformer (inference only).

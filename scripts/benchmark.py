@@ -11,7 +11,7 @@ import argparse
 
 import pandas as pd
 
-from uwiqa import DATA_ROOT, RESULTS_ROOT
+from uwiqa import RESULTS_ROOT
 from uwiqa.data import load_manifest
 from uwiqa.eval import correlate, grouped_srcc, paired_bootstrap_srcc
 
@@ -24,7 +24,7 @@ def main():
     ap.add_argument("--gate", type=float, default=0.7, help="Week-4 gate SRCC for topiq_nr")
     args = ap.parse_args()
 
-    man = load_manifest(DATA_ROOT / "manifests" / f"{args.dataset}.csv").dropna(subset=["mos"])
+    man = load_manifest(args.dataset).dropna(subset=["mos"])
     scores = pd.read_csv(RESULTS_ROOT / "scores" / f"{args.dataset}.csv")
     wide = scores.pivot_table(index="image", columns="metric", values="score")
     hb = scores.groupby("metric")["higher_better"].first().astype(bool).to_dict()
