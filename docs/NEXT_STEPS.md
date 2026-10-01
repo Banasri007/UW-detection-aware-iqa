@@ -29,6 +29,24 @@ Consequences, stated honestly in the write-up:
 3. Run the rest: `check_env`, scoring, benchmark (prints the **Week-4 gate**: TOPIQ_NR SRCC ≳ 0.7), stress test.
 4. Attach Kaggle dataset `skycol/underwater-domain-in-odverse33` and run notebook 02 (CPU) to confirm RUOD/DUO counts, classes, resolution and JPEG quality.
 
+## Detection data — verified on Kaggle (notebook 02, 2026-10-01)
+| | images | objects | split (train/val/test) | notes |
+|---|---|---|---|---|
+| RUOD | 14,000 | 74,904 (paper 74,903) | 11,200 / 1,400 / 1,400 | complete dataset, ODverse33 80/10/10 re-split; 10 classes, 0 unlabeled images |
+| DUO | 7,782 | 74,515 (= paper) | 6,225 / 778 / 779 | 65 unlabeled images; classes holothurian, echinus, scallop, starfish |
+
+- **DUO class ids 0–3 = RUOD class ids 0–3** (same names, same order), so a RUOD-trained detector evaluates on DUO directly by restricting to classes 0–3.
+- Images are at native resolution (720×405 up to 3840×2160), not resized. JPEG quality: RUOD ≈ q85 (mean luma quant 16.1), DUO ≈ q95 (5.8).
+- RUOD and DUO share the same capture resolutions, so they likely share source footage. **Run the near-duplicate check** (`scripts/find_duplicates.py`, last cells of notebook 02) before any split is fixed. If pairs cross RUOD splits or RUOD↔DUO, remove them from the DUO evaluation and use `groups.csv` to keep each group on one side of the RUOD splits.
+- The uploader's DUO `data.yaml` has a stray line and Windows paths; generate our own `data.yaml` for training.
+
+## O3 protocol (proposed)
+1. **Split RUOD train (11,200) into A and B by duplicate group**: A ≈ 7,000 trains the frozen reference detector (YOLO11-s, early stopping on val); B ≈ 4,200 is never seen by the detector.
+2. **Utility labels on B + val + test** (≈ 7,000 images). The predictor trains on B, is tuned on val, and is reported on test. Labelling only the official val/test would give just 2,800 images, too few.
+3. **Enhance on the fly, never store enhanced images.** The predictor only sees the raw image, so we only need Δ: enhance → detect → score → discard. Cache per-image detections instead (a few MB). This keeps us under Kaggle's 20 GB `/kaggle/working` limit (storing 7,000 × 5 enhanced 4K PNGs would not fit).
+4. Enhanced outputs stay in memory, so no extra JPEG generation. Enhancers will amplify RUOD's q≈85 block artefacts; that is part of the real effect, so leave the inputs as they are.
+5. Null-enhancement noise floor: also score a JPEG-q95 re-encode of each raw image to estimate label noise (improvement #4 below).
+
 ## Then (Weeks 5–8, built after the gate)
 - `enhance/deep.py`: wrappers for pretrained Water-Net, FUnIE-GAN, Ucolor, U-shape Transformer (inference only).
 - `detect/per_image_utility.py`: YOLO11-s on raw RUOD → per-image AP on raw vs. each enhanced variant → Δ labels.
