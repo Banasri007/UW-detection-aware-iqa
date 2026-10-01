@@ -63,7 +63,10 @@ def main():
     yml = write_lists(RESULTS_ROOT / "splits" / "yolo")
     project = RESULTS_ROOT / "detector"
     last = project / args.name / "weights" / "last.pt"
-    device = args.device or (",".join(map(str, range(torch.cuda.device_count()))) or "cpu")
+    if not torch.cuda.is_available() and args.device != "cpu":
+        raise SystemExit("No GPU visible. On Kaggle set Session options -> Accelerator -> GPU T4 x2 "
+                         "(a CPU run would take days). Pass --device cpu to force it anyway.")
+    device = args.device or ",".join(map(str, range(torch.cuda.device_count())))
 
     if last.exists():
         print(f"resuming from {last}")
