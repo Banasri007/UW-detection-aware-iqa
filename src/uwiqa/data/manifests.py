@@ -58,6 +58,39 @@ def build_euvp_test(root: str | Path) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=COLUMNS)
 
 
+SPLIT_NAMES = {"train": "train", "valid": "val", "val": "val", "test": "test"}
+DET_COLUMNS = ["image", "label", "split", "n_objects", "classes"]
+
+
+def build_yolo(root: str | Path) -> pd.DataFrame:
+    """Detection manifest for a YOLO-format dataset.
+
+    Handles both layouts seen in the ODverse33 Kaggle copy:
+    ``<split>/images/x.jpg`` (RUOD) and ``images/<split>/x.jpg`` (DUO).
+    Labels are found by swapping the ``images`` path component for
+    ``labels`` and the extension for ``.txt``. Columns: image, label, split,
+    n_objects, classes (space-separated class ids present).
+    """
+    root = Path(root)
+    rows = []
+    for p in _images(root):
+        parts = list(p.relative_to(root).parts)
+        if "images" not in parts:
+            continue
+        split = next((SPLIT_NAMES[s] for s in parts[:-1] if s in SPLIT_NAMES), "unknown")
+        lab_parts = ["labels" if s == "images" else s for s in parts[:-1]] + [p.stem + ".txt"]
+        lab = Path(*lab_parts)
+        cls = []
+        if (root / lab).exists():
+            cls = [ln.split()[0] for ln in (root / lab).read_text().splitlines() if ln.strip()]
+        rows.append({"image": p.relative_to(root).as_posix(), "label": lab.as_posix(),
+                     "split": split, "n_objects": len(cls),
+                     "classes": " ".join(sorted(set(cls), key=int))})
+    if not rows:
+        raise FileNotFoundError(f"no images/ folders under {root}")
+    return pd.DataFrame(rows, columns=DET_COLUMNS)
+
+
 TABLE_EXTS = {".xlsx", ".xls", ".csv", ".txt", ".mat"}
 
 
@@ -148,7 +181,9 @@ def load_manifest(path_or_name: str | Path) -> pd.DataFrame:
     path = Path(path_or_name)
     if path.suffix != ".csv":
         path = manifest_path(str(path_or_name))
-    df = pd.read_csv(path)
+    df = pd.read_csv(path, dtype={"classes": str})
+    if "split" in df.columns:  # detection manifest
+        return df
     missing = set(COLUMNS) - set(df.columns)
     if missing:
         raise ValueError(f"manifest {path} missing columns {missing}")

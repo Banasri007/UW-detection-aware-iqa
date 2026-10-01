@@ -16,9 +16,18 @@ uid2021:            # O1 + O2. Hou et al., ACM TOMM 2023. 60 raw + 900 enhanced 
   method_regex: "^ERI_[A-Za-z]+_\\d+_(.+)$"
   method_default: raw
 
-ruod:               # O3 + O4. Fu et al., Neurocomputing 2023. Manifest built in the detection stage.
-  root: RUOD
-  builder: detection
+# Detection data: Kaggle "skycol/underwater-domain-in-odverse33" (CC BY-NC-SA 4.0),
+# YOLO format, re-split by the ODverse33 benchmark (RUOD test = 1,400 images,
+# NOT the original 4,200). Attach it in Kaggle and set RUOD_ROOT / DUO_ROOT, e.g.
+#   /kaggle/input/underwater-domain-in-odverse33/Underwater/RUOD
+
+ruod:               # O3 + O4. Fu et al., Neurocomputing 2023. 10 classes. Layout: <split>/images
+  root: Underwater/RUOD
+  builder: yolo
+
+duo:                # O5 cross-dataset check. Liu et al., ICMEW 2021. 4 classes. Layout: images/<split>
+  root: Underwater/DUO
+  builder: yolo
 
 # Optional second MOS dataset (only if time allows; inference-only, ~1 h on Kaggle):
 # saud:

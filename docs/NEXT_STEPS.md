@@ -20,13 +20,14 @@ No single dataset has both human quality scores and detection boxes, so the mini
 
 Consequences, stated honestly in the write-up:
 - O1 becomes a single-dataset benchmark. Gap 4 ("fragmented subjective datasets") is no longer addressed; drop it from the claims or add SAUD later (~1 h of Kaggle inference).
-- O5 cross-*dataset* generalisation becomes cross-*split* generalisation within RUOD (leakage-safe clusters). Add DUO only if time allows.
+- ~~O5 becomes cross-split only~~ → **restored**: the Kaggle ODverse33 copy ships RUOD *and* DUO in YOLO format, so the cross-dataset check costs no extra download. DUO's 4 classes (echinus, holothurian, starfish, scallop) correspond to RUOD's seaurchin / seacucumber / starfish / scallop.
+- RUOD is the **ODverse33 re-split** (test = 1,400, not 4,200). Fine for our purpose; state it in the paper and don't compare mAP against numbers on the original split.
 
 ## Immediate next steps (you)
 1. Import the notebook into Kaggle (GPU, Internet on), run cells 1–4.
 2. From the `inspect_dataset` output, fill the three values in cell 5.
 3. Run the rest: `check_env`, scoring, benchmark (prints the **Week-4 gate**: TOPIQ_NR SRCC ≳ 0.7), stress test.
-4. Meanwhile, get RUOD onto Kaggle (search Kaggle Datasets for a mirror, or upload it) for Week 5.
+4. Attach Kaggle dataset `skycol/underwater-domain-in-odverse33` and run notebook 02 (CPU) to confirm RUOD/DUO counts, classes, resolution and JPEG quality.
 
 ## Then (Weeks 5–8, built after the gate)
 - `enhance/deep.py`: wrappers for pretrained Water-Net, FUnIE-GAN, Ucolor, U-shape Transformer (inference only).

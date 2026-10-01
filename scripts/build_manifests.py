@@ -9,9 +9,9 @@ import sys
 import yaml
 
 from uwiqa import MANIFEST_ROOT, PROJECT_ROOT
-from uwiqa.data import build_euvp_test, build_uieb, dataset_root, from_table
+from uwiqa.data import build_euvp_test, build_uieb, build_yolo, dataset_root, from_table
 
-BUILDERS = {"uieb": build_uieb, "euvp_test": build_euvp_test}
+BUILDERS = {"uieb": build_uieb, "euvp_test": build_euvp_test, "yolo": build_yolo}
 
 
 def main():
@@ -26,9 +26,6 @@ def main():
     ok = True
     for name, c in cfg.items():
         if args.only and name not in args.only:
-            continue
-        if c["builder"] == "detection":
-            print(f"[skip] {name}: detection dataset, handled in the O3 stage")
             continue
         root = dataset_root(name)
         if not root.exists():
@@ -51,9 +48,13 @@ def main():
             continue
         dest = out_dir / f"{name}.csv"
         df.to_csv(dest, index=False)
-        n_mos = df["mos"].notna().sum()
-        print(f"[ok]   {name}: {len(df)} images ({n_mos} with MOS, "
-              f"{df['scene'].nunique()} scenes, {df['method'].nunique()} methods) -> {dest}")
+        if "split" in df.columns:
+            print(f"[ok]   {name}: {len(df)} images, {int(df['n_objects'].sum())} objects, "
+                  f"splits {df['split'].value_counts().to_dict()} -> {dest}")
+        else:
+            n_mos = df["mos"].notna().sum()
+            print(f"[ok]   {name}: {len(df)} images ({n_mos} with MOS, "
+                  f"{df['scene'].nunique()} scenes, {df['method'].nunique()} methods) -> {dest}")
     sys.exit(0 if ok else 1)
 
 
