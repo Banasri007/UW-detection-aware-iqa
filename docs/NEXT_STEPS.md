@@ -131,6 +131,35 @@ Mean per-image AP50-95 and Δ vs raw. "helps"/"hurts" here means Δ>0 / Δ<0, **
 - **Choosing the enhancer by NR-IQA, as common practice does, costs 5–17 mAP points.** This is the strongest practical result.
 - This is the handoff's "negative result, report rigorously" branch for the policy, while O4 is a positive ranking result over the IQA baselines.
 
+## O1/O2 on UID2021 (notebook 01, 2026-10-02): 960 images, MOS from 77 observers
+| metric | SRCC [95% CI] | intra-scene SRCC |
+|---|---|---|
+| uranker (underwater-trained) | **0.623** [0.581, 0.665] | **0.578** |
+| liqe_mix / liqe | 0.484 / 0.482 | 0.381 / 0.401 |
+| musiq / arniqa | 0.403 / 0.388 | 0.303 / 0.289 |
+| uciqe / uiqm | 0.334 / 0.325 | 0.351 / 0.293 |
+| topiq_nr | 0.316 | 0.167 |
+| clipiqa+ / tres / qualiclip / maniqa / clipiqa | 0.30 / 0.29 / 0.25 / 0.21 / 0.19 | 0.07 / 0.07 / 0.02 / −0.09 / 0.02 |
+| niqe / brisque | 0.158 / 0.034 | 0.07 / −0.06 |
+
+Every metric is significantly worse than URanker (paired bootstrap p ≈ 0).
+
+- **Week-4 gate (TOPIQ ≥ 0.7): FAIL (0.316). Under investigation, not yet interpretable.** Our UIQM/UCIQE/NIQE are about 0.2–0.27 below the UID2021 paper's own Table 9 (0.540 / 0.603 / 0.330). Candidate causes: the 77-observer MOS file vs the paper's 52; the workbook content; image↔MOS alignment; implementation differences. URanker's 0.62 argues against wholesale misalignment. `scripts/diagnose_uid2021.py` (last cell of notebook 01) checks these.
+- Intra-scene SRCC (ranking enhancements of the same image): in-air deep metrics collapse to ≈ 0 (CLIP-IQA, QualiCLIP, MANIQA, TReS). URanker keeps 0.58. This holds whatever the gate outcome is.
+
+**O2 stress test** (Spearman of score vs distortion strength 0 → 3, mean over 60 raw images; +1 = score rises steadily as the image is over-processed):
+
+| metric | contrast | red shift | saturation | unsharp |
+|---|---|---|---|---|
+| uciqe | **0.91** | −0.01 | **0.76** | **1.00** |
+| uranker | **0.89** | −0.51 | −0.86 | **1.00** |
+| musiq / topiq_nr | 0.08 / −0.34 | −0.10 / −0.01 | −0.63 / −0.52 | **0.68 / 0.60** |
+| liqe | 0.28 | −0.18 | −0.47 | −0.10 |
+| uiqm | −0.77 | −0.30 | −0.73 | −0.09 |
+
+- **UCIQE is gameable** by contrast, saturation and sharpening. **URanker** (the best metric on MOS) is gameable by contrast and sharpening. MUSIQ and TOPIQ reward over-sharpening. UIQM and LIQE do not inflate monotonically over this range.
+- Caveat: the range spans 0 → 3, which is heavy. Small-strength inflation (e.g. UIQM under a mild red shift, seen in the unit tests) can hide inside a negative overall Spearman. A per-strength curve plot should go in the write-up. Claiming "humans prefer less" needs the small 2AFC study (improvement #8).
+
 ## Kaggle workflow
 Imported notebooks are frozen copies, so all logic lives in the repo. The first cell of every notebook is
 `%run /kaggle/working/repo/scripts/kaggle_setup.py`, which resets the clone to `origin/main`, reinstalls, and

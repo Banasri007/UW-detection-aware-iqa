@@ -74,7 +74,7 @@ class MetricRunner:
                     s = 224 / min(img.shape[:2])
                     img = np.asarray(Image.fromarray(img).resize(
                         (round(img.shape[1] * s), round(img.shape[0] * s)), Image.BICUBIC))
-                t = torch.from_numpy(img).permute(2, 0, 1).float().div(255).unsqueeze(0)
+                t = torch.from_numpy(np.array(img, copy=True)).permute(2, 0, 1).float().div(255).unsqueeze(0)
                 with torch.no_grad():
                     return float(model(t.to(self.device)).item())
 

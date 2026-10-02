@@ -67,6 +67,9 @@ NB01 = [
     (C, "# O1 table + Week-4 gate verdict\n!python scripts/benchmark.py --dataset uid2021"),
     (C, "# O2 over-enhancement stress test on the 60 raw images\n"
         "!python scripts/stress_test.py --dataset uid2021 --metrics uiqm uciqe topiq_nr liqe musiq uranker"),
+    (C, "# Week-4 gate debugging: compare UIQM/UCIQE/NIQE with the UID2021 paper (Tables 8-9), check the\n"
+        "# MOS workbook and image<->MOS alignment. Needs results/scores/uid2021.csv from the scoring cell.\n"
+        "!python scripts/diagnose_uid2021.py"),
 ]
 
 NB03 = [
