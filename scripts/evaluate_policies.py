@@ -49,11 +49,11 @@ def choose(S, methods, delta, prior):
     return np.where(best > delta, np.array(methods)[j], "raw")
 
 
-def tune_delta(S, methods, ap_val, prior):
-    """Margin maximising mean per-image AP on validation (also allows never/always enhancing)."""
+def tune_delta(S, methods, objective, prior, n_cands=41):
+    """Margin maximising objective(choice) on validation (also allows never/always enhancing)."""
     best_scores = (S + prior[None, :] * 1e-9).max(1)
-    cands = np.r_[-np.inf, np.quantile(best_scores, np.linspace(0, 1, 41)), np.inf]
-    obj = [ap_val.lookup_mean(choose(S, methods, d, prior)) for d in cands]
+    cands = np.r_[-np.inf, np.quantile(best_scores, np.linspace(0, 1, n_cands)), np.inf]
+    obj = [objective(choose(S, methods, d, prior)) for d in cands]
     return float(cands[int(np.argmax(obj))])
 
 
@@ -69,8 +69,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n-boot", type=int, default=200)
     ap.add_argument("--metric", default="ap")
+    ap.add_argument("--objective", default="image_ap", choices=["image_ap", "map"],
+                    help="what the margin is tuned to maximise on pred_val: mean per-image AP or dataset mAP")
     args = ap.parse_args()
     out = RESULTS_ROOT / "policies"
+    sfx = "" if args.objective == "image_ap" else f"_{args.objective}"
     out.mkdir(parents=True, exist_ok=True)
 
     W_r, _ = load_utility("ruod_pred", args.metric)
@@ -100,6 +103,16 @@ def main():
             scorers[name] = S
 
     ap_val = APTable(sets["val"])
+    if args.objective == "map":
+        val_imgs = list(sets["val"].index)
+        print(f"[val] building match cache for {len(val_imgs)} images (objective = dataset mAP) ...", flush=True)
+        val_cache = MatchCache(str(RESULTS_ROOT / "utility" / "ruod_pred" / "main" / "preds_*.npz"),
+                               gts_for("ruod_pred", val_imgs, None))
+        objective = lambda ch: val_cache.map(val_imgs, list(ch))["map"]
+        n_cands = 21
+    else:
+        objective, n_cands = ap_val.lookup_mean, 41
+    tuned = {}
     rows, choices = {"test": [], "duo": []}, {"test": {}, "duo": {}}
     val_obj = {}
     for s, set_name, classes in (("test", "ruod_pred", None), ("duo", "duo_clean", [0, 1, 2, 3])):
@@ -117,9 +130,12 @@ def main():
         for name, S in scorers.items():
             if np.isnan(S[s]).any() or np.isnan(S["val"]).any():
                 continue
-            d = tune_delta(S["val"], methods, ap_val, prior)
+            if name not in tuned:  # tune once, reuse for test and duo
+                d0 = tune_delta(S["val"], methods, objective, prior, n_cands)
+                tuned[name] = (d0, objective(choose(S["val"], methods, d0, prior)))
+            d = tuned[name][0]
             pol[f"{name}|tuned" if name.startswith("iqa_") else name] = list(choose(S[s], methods, d, prior))
-            val_obj[name] = ap_val.lookup_mean(choose(S["val"], methods, d, prior))
+            val_obj[name] = tuned[name][1]
             if name.startswith("iqa_delta"):
                 pol[f"{name}|naive"] = list(choose(S[s], methods, -np.inf, prior))
         base = cache.map(imgs, pol["all_raw"])
@@ -137,7 +153,7 @@ def main():
 
     for s, label in (("test", "RUOD pred_test"), ("duo", "DUO clean (margins tuned on RUOD)")):
         tab = pd.DataFrame(rows[s]).sort_values("map", ascending=False)
-        tab.to_csv(out / f"policies_{s}.csv", index=False)
+        tab.to_csv(out / f"policies_{s}{sfx}.csv", index=False)
         print(f"\n=== {label}: dataset mAP by policy ===")
         print(tab.round(4).to_string(index=False))
         cache, imgs, pol = choices[s]
@@ -152,7 +168,7 @@ def main():
                 r = cache.bootstrap_diff(imgs, pol[a], pol[b], n_boot=args.n_boot)
                 comps.append({"policy": a, "vs": b, **r})
         comp = pd.DataFrame(comps)
-        comp.to_csv(out / f"bootstrap_{s}.csv", index=False)
+        comp.to_csv(out / f"bootstrap_{s}{sfx}.csv", index=False)
         print(f"\npaired bootstrap of mAP50-95 difference ({args.n_boot} resamples):")
         print(comp.round(4).to_string(index=False))
 

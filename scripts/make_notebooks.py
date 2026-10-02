@@ -148,11 +148,30 @@ NB05 = [
     (C, "!python scripts/evaluate_policies.py"),
 ]
 
+NB06 = [
+    (M, "# 06 — Policy re-tuning on dataset mAP + paper figures (CPU, ~30 min)\n\n"
+        "**Settings:** Accelerator **None** (CPU), Internet **On**.\n"
+        "**Inputs (Add Input):**\n"
+        "1. *Underwater Domain in ODverse33* (skycol): ground-truth boxes\n"
+        "2. **Your Work → notebook 05** (fcv-project-5, committed version): labels, features, predictor\n"
+        "3. **Your Work → notebook 01** (fcv-project-1): UID2021 benchmark + stress test\n\n"
+        "Run with **Save Version → Save & Run All (Commit)**, then download `paper_results.zip` from the "
+        "version's **Output** tab.\n" + PERSIST),
+    (C, setup()),
+    (C, "# Selective enhancement with the margin tuned on validation *dataset mAP* (the metric we report)\n"
+        "!python scripts/evaluate_policies.py --objective map"),
+    (C, "# All paper figures (PDF) and LaTeX table rows\n!python scripts/make_figures.py"),
+    (C, "!cd /kaggle/working/results && zip -qr /kaggle/working/paper_results.zip paper tables policies "
+        "predictor/summary_test.csv predictor/summary_duo.csv predictor/per_method_test.csv "
+        "predictor/per_method_duo.csv && ls -lh /kaggle/working/paper_results.zip"),
+]
+
 if __name__ == "__main__":
     for name, cells, acc in [("01_kaggle_benchmark_uid2021.ipynb", NB01, "gpu"),
                              ("03_kaggle_splits_and_detector.ipynb", NB03, "gpu"),
                              ("04_kaggle_utility_labels.ipynb", NB04, "gpu"),
-                             ("05_kaggle_predictor_and_policies.ipynb", NB05, "gpu")]:
+                             ("05_kaggle_predictor_and_policies.ipynb", NB05, "gpu"),
+                             ("06_kaggle_policies_and_figures.ipynb", NB06, "none")]:
         p = NB_DIR / name
         json.dump(nb(cells, acc), open(p, "w", encoding="utf-8"), indent=1)
         print("wrote", p)
