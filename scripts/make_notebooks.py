@@ -70,6 +70,8 @@ NB01 = [
     (C, "# Week-4 gate debugging: compare UIQM/UCIQE/NIQE with the UID2021 paper (Tables 8-9), check the\n"
         "# MOS workbook and image<->MOS alignment. Needs results/scores/uid2021.csv from the scoring cell.\n"
         "!python scripts/diagnose_uid2021.py"),
+    (C, "# Does the original (2022, 52-observer) MOS reproduce the paper's numbers?\n"
+        "!python scripts/compare_uid2021_mos.py"),
 ]
 
 NB03 = [

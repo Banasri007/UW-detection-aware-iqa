@@ -145,6 +145,13 @@ Mean per-image AP50-95 and Δ vs raw. "helps"/"hurts" here means Δ>0 / Δ<0, **
 Every metric is significantly worse than URanker (paired bootstrap p ≈ 0).
 
 - **Week-4 gate (TOPIQ ≥ 0.7): FAIL (0.316). Under investigation, not yet interpretable.** Our UIQM/UCIQE/NIQE are about 0.2–0.27 below the UID2021 paper's own Table 9 (0.540 / 0.603 / 0.330). Candidate causes: the 77-observer MOS file vs the paper's 52; the workbook content; image↔MOS alignment; implementation differences. URanker's 0.62 argues against wholesale misalignment. `scripts/diagnose_uid2021.py` (last cell of notebook 01) checks these.
+- **Diagnostic result (diagnose_uid2021.py):** no data bug.
+  - All 960 image↔MOS pairs align, and all 60 scenes match the table's Scene column. The 60 "method mismatches" are just the raw images' label.
+  - The workbook has one sheet and one MOS column (range 0–8.9).
+  - Per-method mean MOS is sensible: UWCNN 1.56 < raw 1.88 < … < UWB-VCSE 6.78.
+  - Images are 512×384; about 7% are RGBA (alpha is dropped on load).
+  - The shortfall vs the paper is uniform across all six subsets (UCIQE 0.23–0.46 vs 0.54–0.67). Remaining explanations: (a) the MOS revision (77 vs 52 observers; the README switched Drive files in Dec 2022), or (b) the paper's MATLAB implementations.
+  - `compare_uid2021_mos.py` downloads the pre-Dec-2022 release and recomputes SROCC against both MOS versions.
 - Intra-scene SRCC (ranking enhancements of the same image): in-air deep metrics collapse to ≈ 0 (CLIP-IQA, QualiCLIP, MANIQA, TReS). URanker keeps 0.58. This holds whatever the gate outcome is.
 
 **O2 stress test** (Spearman of score vs distortion strength 0 → 3, mean over 60 raw images; +1 = score rises steadily as the image is over-processed):
