@@ -29,7 +29,7 @@ email@domain}}
 \maketitle
 
 \begin{abstract}
-Enhanced underwater images are routinely judged by the hand-crafted no-reference (NR) metrics UIQM and UCIQE, and enhancement is routinely applied before object detection. We test both habits on public data under one protocol. First, we benchmark 16 NR image-quality metrics against human opinion scores on UID2021 (960 images, 77 observers) with bootstrap confidence intervals, paired significance tests and intra-scene rank correlation. Only the underwater-trained URanker reaches a Spearman correlation of 0.62. In-air deep metrics fall to near zero when ranking enhancements of the same scene, and UCIQE and URanker are inflated by deliberate over-enhancement. Second, we label every held-out image of a leakage-safe re-split of RUOD, and a duplicate-free subset of DUO, with the change in per-image detection AP caused by five enhancers, measured by a frozen YOLO11 detector and calibrated against a label-noise floor. All five enhancers lower mean AP (by 0.02--0.08 on RUOD and 0.05--0.20 on DUO). A per-image oracle could still gain 0.025 mAP, about ten times what label noise alone produces. A lightweight predictor that sees only the raw image ranks the detection-utility change far better than any NR-IQA metric (Spearman 0.32 vs.\ $\le$0.13). However, selective enhancement driven by it only matches never enhancing, whereas choosing the enhancer with the best NR-IQA gain, as common practice suggests, costs up to 0.17 mAP. We also report that the public re-split of RUOD leaks near-duplicate frames across splits and overlaps heavily with DUO. Code and per-image utility labels are released.
+Enhanced underwater images are routinely judged by the hand-crafted no-reference (NR) metrics UIQM and UCIQE, and enhancement is routinely applied before object detection. We test both habits on public data under one protocol. First, we benchmark 16 NR image-quality metrics against human opinion scores on UID2021 (960 images, 77 observers) with bootstrap confidence intervals, paired significance tests and intra-scene rank correlation. Only the underwater-trained URanker reaches a Spearman correlation of 0.62. In-air deep metrics fall to near zero when ranking enhancements of the same scene, and UCIQE and URanker are inflated by deliberate over-enhancement. Second, we label every held-out image of a leakage-safe re-split of RUOD, and a duplicate-free subset of DUO, with the change in per-image detection AP caused by five enhancers, measured by a frozen YOLO11 detector and calibrated against a label-noise floor. All five enhancers lower mean AP (by 0.02--0.08 on RUOD and 0.05--0.20 on DUO). A per-image oracle could still gain 0.025 mAP, about ten times what label noise alone produces. A lightweight predictor that sees only the raw image ranks the detection-utility change far better than any NR-IQA metric (Spearman 0.32 vs.\ $\le$0.13). However, selective enhancement driven by it at best matches never enhancing, whether its margin is tuned for per-image AP or for dataset mAP, whereas choosing the enhancer with the best NR-IQA gain, as common practice suggests, costs up to 0.17 mAP. We also report that the public re-split of RUOD leaks near-duplicate frames across splits and overlaps heavily with DUO. Code and per-image utility labels are released.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -274,10 +274,9 @@ Learned raw-only predictors rank the utility change far better than any NR-IQA s
 The backbone and the ranking loss barely matter (SRCC 0.31--0.32), which suggests the limit is the signal, not model capacity. On DUO, raw LIQE/TOPIQ scores match the learned classifiers' AUROC ($\approx$0.60) but carry no ranking information.
 
 \subsection{Selective enhancement}
-% UPDATE after notebook 06: switch to the dataset-mAP-tuned policies (policies_*_map.csv, fig_o5_policies_map.pdf)
 \begin{table}[t]
 \centering
-\caption{Dataset mAP$_{50:95}$ of enhancement policies. Margins tuned on RUOD pred-val. Bracketed: 95\% paired-bootstrap CI of the change vs.\ always-raw.}
+\caption{Dataset mAP$_{50:95}$ of enhancement policies. Margins and model choice are tuned on RUOD pred-val, either for mean per-image AP or for dataset mAP; nothing is tuned on DUO. Bracketed: 95\% paired-bootstrap CI of the change vs.\ always-raw.}
 \label{tab:o5}
 \setlength{\tabcolsep}{2.6pt}
 \footnotesize
@@ -292,9 +291,12 @@ Always best enhancer & 0.5299 & $-$0.025 & 0.3420 & $-$0.060 \\
 Always worst enhancer & 0.4550 & $-$0.100 & 0.1946 & $-$0.207 \\
 NR-IQA choice, UCIQE & 0.5087 & $-$0.046 & 0.3363 & $-$0.066 \\
 NR-IQA choice, TOPIQ & 0.4655 & $-$0.089 & 0.2279 & $-$0.174 \\
-NR-IQA, tuned margin & 0.5541 & $-$0.001 & 0.3904 & $-$0.012 \\
-Learned (ours) & 0.5551 & +0.000 & 0.4020 & 0.000 \\
+NR-IQA, margin tuned (AP) & 0.5541 & $-$0.001 & 0.3904 & $-$0.012 \\
+NR-IQA, margin tuned (mAP) & 0.5547 & $-$0.000 & 0.4014 & $-$0.001 \\
+Learned, tuned (AP) & 0.5551 & +0.000 & 0.4020 & 0.000 \\
  & \multicolumn{2}{r}{\scriptsize{}[$-$0.0002, 0.0007]} & & \\
+Learned, tuned (mAP) & 0.5531 & $-$0.002 & 0.4009 & $-$0.001 \\
+ & \multicolumn{2}{r}{\scriptsize{}[$-$0.0037, $-$0.0004]} & \multicolumn{2}{r}{\scriptsize{}[$-$0.0018, $-$0.0003]} \\
 Noise oracle (control) & 0.5572 & +0.002 & 0.4036 & +0.002 \\
 Oracle (upper bound) & 0.5801 & +0.025 & 0.4233 & +0.021 \\
 \bottomrule
@@ -308,7 +310,11 @@ Oracle (upper bound) & 0.5801 & +0.025 & 0.4233 & +0.021 \\
 \label{fig:o5}
 \end{figure*}
 
-The per-image oracle gains 0.025 (RUOD) and 0.021 (DUO) mAP over always-raw, about ten times the noise oracle (0.002). There is real headroom. The learned policy, with its margin chosen on validation, enhances only 0--3\% of images. It therefore matches always-raw (+0.0003, CI includes zero) and beats every always-enhance policy by 0.025--0.06 mAP (Table~\ref{tab:o5}, Fig.~\ref{fig:o5}). The common practice of applying the enhancer with the best NR-IQA gain is harmful: it costs 0.046--0.089 mAP on RUOD and 0.066--0.174 on DUO.
+The per-image oracle gains 0.025 (RUOD) and 0.021 (DUO) mAP over always-raw, about ten times the noise oracle (0.002). There is real headroom. None of it is recovered by a deployable policy (Table~\ref{tab:o5}, Fig.~\ref{fig:o5}).
+
+When the model and margin are tuned on validation for mean per-image AP, the selected learned policy (ridge on DINOv2) enhances 3\% of RUOD images and ties always-raw (+0.0003, CI includes zero). When they are tuned directly on validation \emph{dataset} mAP, the selected policy (logistic on CLIP) enhances 3.9\% of images. It \emph{loses} a small but significant 0.0017 mAP on RUOD and 0.0010 on DUO: the margin that looks best on validation does not transfer. Margin-tuned NR-IQA policies behave the same way ($-$0.0002 to $-$0.012).
+
+All tuned policies beat every always-enhance policy by 0.024--0.06 mAP, but only because they learn to almost never enhance. Applying the enhancer with the best NR-IQA gain, as common practice suggests, is harmful: it costs 0.046--0.089 mAP on RUOD and 0.066--0.174 on DUO.
 
 The learned predictor's ranking signal (SRCC 0.32, AUROC 0.60) is thus too weak to pick out the $\approx$11\% of images that benefit, with enough precision to outweigh the losses on the rest.
 

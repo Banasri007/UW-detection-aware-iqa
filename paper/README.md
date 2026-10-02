@@ -15,6 +15,5 @@
 
 ## Before submission
 - Replace the author block (name, affiliation, email).
-- Update Table V / the selective-enhancement text with the **mAP-tuned** policy numbers from notebook 06 (`policies/policies_test_map.csv`, `policies_duo_map.csv`, `bootstrap_*_map.csv`). See the `% UPDATE` comment in `main.tex`.
 - Check every `refs.bib` entry marked `% VERIFY` against the publisher page.
 - Check the target venue's page limit; the Discussion and Related Work are the easiest to trim.

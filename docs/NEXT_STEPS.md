@@ -130,6 +130,7 @@ Mean per-image AP50-95 and Δ vs raw. "helps"/"hurts" here means Δ>0 / Δ<0, **
 - **Headroom is real** (oracle ≈ 10× the noise control), **but the learned policy does not convert it into mAP.** With margins tuned on val, it enhances 0–3% of images and ties all_raw. Selective enhancement beats every *always-enhance* policy by 0.025–0.06 mAP, because it learns to almost never enhance.
 - **Choosing the enhancer by NR-IQA, as common practice does, costs 5–17 mAP points.** This is the strongest practical result.
 - This is the handoff's "negative result, report rigorously" branch for the policy, while O4 is a positive ranking result over the IQA baselines.
+- **Re-tuned on validation dataset mAP (notebook 06, 2026-10-03):** the val-selected policy (logreg@clip_b32|p) enhances 3.9% of images and *loses* 0.0017 mAP on RUOD (CI [−0.0037, −0.0004]) and 0.0010 on DUO (CI [−0.0018, −0.0003]). The best NR-IQA policy (iqa_delta-liqe) ties raw (−0.0002, CI includes 0). The val-optimal margin does not transfer, so the negative policy result is robust to the tuning objective. Paper Table V reports both objectives.
 
 ## O1/O2 on UID2021 (notebook 01, 2026-10-02): 960 images, MOS from 77 observers
 | metric | SRCC [95% CI] | intra-scene SRCC |
