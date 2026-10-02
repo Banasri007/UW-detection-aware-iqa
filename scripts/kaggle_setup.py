@@ -73,4 +73,5 @@ for src_root in prev:
                 n += 1
     print(f"restored {n} files from {src_root}")
 best = os.path.join(os.environ["RESULTS_ROOT"], "detector/raw_yolo11s/weights/best.pt")
-print("detector", best, "(ok)" if os.path.exists(best) else "(not present: attach notebook 03's output)")
+if "RUOD" in found:  # only the detection notebooks (03-05) need the detector
+    print("detector", best, "(ok)" if os.path.exists(best) else "(not present: attach notebook 03's output)")
