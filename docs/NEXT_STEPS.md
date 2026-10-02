@@ -100,6 +100,37 @@ Mean per-image AP50-95 and Δ vs raw. "helps"/"hurts" here means Δ>0 / Δ<0, **
 - `train_predictor.py`: ridge, logistic and multi-task MLP (Δ regression + help classification + ranking loss; no-rank ablation; 3-seed ensemble) per backbone. Baselines: `iqa_raw-k` (−Q(raw)) and `iqa_delta-k` (Q(enh) − Q(raw)). Trained on pred_train, tuned on pred_val, reported on pred_test and DUO.
 - `evaluate_policies.py`: dataset mAP for all_raw, all_m, oracle, noise_oracle, learned and IQA-driven policies, with margins tuned on pred_val. The best learned policy is chosen on val, then paired-bootstrapped against all_raw and the best fixed enhancer.
 
+### Results (notebook 05 commit, 2026-10-02)
+**O4: predicting the utility delta from the raw image** (mean over 5 enhancers; τ = 0.050; helps-rate ≈ 11% on RUOD, 9–19% on DUO)
+
+| predictor | RUOD test SRCC | AUROC | DUO SRCC | AUROC |
+|---|---|---|---|---|
+| mlp@clip_b32 (best SRCC) | **0.319** | 0.597 | 0.174 | 0.597 |
+| mlp@clip_b32+dinov2_s14 | 0.314 | 0.598 | 0.172 | **0.602** |
+| ridge@clip_b32 | 0.315 | 0.519 | 0.154 | 0.483 |
+| best IQA, quality gain (iqa_delta-uciqe) | 0.133 | 0.532 | −0.015 | 0.442 |
+| IQA raw quality (iqa_raw-liqe / topiq_nr) | −0.235 / −0.212 | 0.513 / 0.528 | −0.026 / −0.020 | 0.598 / 0.593 |
+
+- Learned raw-only predictors capture real signal (SRCC ≈ 0.31 in-domain, ≈ 0.17 cross-dataset), well above every NR-IQA baseline.
+- **NR-IQA "quality gain" does not predict detection gain** (SRCC −0.18 … 0.13; AUROC ≈ 0.44–0.53). This holds for UIQM/UCIQE and for the deep metrics, including the underwater-specific URanker.
+- **Raw-image quality correlates the "wrong" way** (SRCC ≈ −0.22 for TOPIQ/LIQE/URanker): enhancement hurts *more* on images that already look poor.
+- Backbone and ranking-loss ablations barely matter (SRCC 0.30–0.32). Ridge ranks as well as the MLP but classifies worse.
+
+**O5: selective enhancement (dataset mAP50-95)**
+
+| policy | RUOD test | Δ vs raw | DUO clean | Δ vs raw |
+|---|---|---|---|---|
+| all_raw | 0.5548 | — | 0.4020 | — |
+| oracle (upper bound) | 0.5801 | +0.025 | 0.4233 | +0.021 |
+| noise_oracle (control) | 0.5572 | +0.002 | 0.4036 | +0.002 |
+| best learned, chosen on val (ridge@dinov2_s14) | 0.5551 | +0.0003 [−0.0002, 0.0007] | 0.4020 | 0.000 |
+| best fixed enhancer | 0.5299 (clahe) | −0.025 | 0.3420 (udcp) | −0.060 |
+| IQA-driven, naive (best quality gain) | 0.465–0.509 | −0.046 … −0.089 | 0.228–0.336 | −0.066 … −0.174 |
+
+- **Headroom is real** (oracle ≈ 10× the noise control), **but the learned policy does not convert it into mAP.** With margins tuned on val, it enhances 0–3% of images and ties all_raw. Selective enhancement beats every *always-enhance* policy by 0.025–0.06 mAP, because it learns to almost never enhance.
+- **Choosing the enhancer by NR-IQA, as common practice does, costs 5–17 mAP points.** This is the strongest practical result.
+- This is the handoff's "negative result, report rigorously" branch for the policy, while O4 is a positive ranking result over the IQA baselines.
+
 ## Kaggle workflow
 Imported notebooks are frozen copies, so all logic lives in the repo. The first cell of every notebook is
 `%run /kaggle/working/repo/scripts/kaggle_setup.py`, which resets the clone to `origin/main`, reinstalls, and
