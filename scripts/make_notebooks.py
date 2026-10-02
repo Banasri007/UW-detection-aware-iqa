@@ -121,10 +121,33 @@ NB04 = [
         "!python scripts/build_utility_labels.py --set duo_clean --deep funiegan"),
 ]
 
+NB05 = [
+    (M, "# 05 — Detection-aware predictor + selective enhancement (O4, O5, headline result)\n\n"
+        "**Settings:** Accelerator **GPU T4 x2**, Internet **On**.\n"
+        "**Inputs (Add Input):**\n"
+        "1. *Underwater Domain in ODverse33* (skycol)\n"
+        "2. **Your Work → notebook 04** (committed version with the utility labels). It already contains "
+        "notebook 03's splits and detector, so cell 1 restores everything.\n\n"
+        "Run everything with **Save Version → Save & Run All (Commit)** (~2 h). Long steps are resumable.\n"
+        + PERSIST),
+    (C, setup("iqa")),
+    (C, "!python scripts/get_enhancers.py"),
+    (M, "### 1. Features (~1 h)\nFrozen CLIP / DINOv2 / ResNet-18 embeddings of each **raw** image, plus "
+        "UIQM, UCIQE, TOPIQ-NR, LIQE and URanker scores of raw and every enhanced variant (for the baselines)."),
+    (C, "!python scripts/extract_features.py --set ruod_pred --deep funiegan"),
+    (C, "!python scripts/extract_features.py --set duo_clean --deep funiegan"),
+    (M, "### 2. Predictor vs NR-IQA baselines (~15 min)\n"
+        "Train on RUOD pred_train, tune on pred_val, report on pred_test and DUO (nothing tuned on DUO)."),
+    (C, "!python scripts/train_predictor.py"),
+    (M, "### 3. Selective enhancement: dataset mAP by policy (~30 min)"),
+    (C, "!python scripts/evaluate_policies.py"),
+]
+
 if __name__ == "__main__":
     for name, cells, acc in [("01_kaggle_benchmark_uid2021.ipynb", NB01, "gpu"),
                              ("03_kaggle_splits_and_detector.ipynb", NB03, "gpu"),
-                             ("04_kaggle_utility_labels.ipynb", NB04, "gpu")]:
+                             ("04_kaggle_utility_labels.ipynb", NB04, "gpu"),
+                             ("05_kaggle_predictor_and_policies.ipynb", NB05, "gpu")]:
         p = NB_DIR / name
         json.dump(nb(cells, acc), open(p, "w", encoding="utf-8"), indent=1)
         print("wrote", p)

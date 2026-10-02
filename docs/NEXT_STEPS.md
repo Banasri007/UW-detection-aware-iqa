@@ -77,6 +77,29 @@ YOLO11-s, 640 px, 100 epochs on `det_train` (6,300 images), 1.97 h on 2×T4; con
 - **Every enhancer hurts on average** (mean Δap: clahe −0.05, udcp −0.07, funiegan −0.10, fusion −0.13, gray_world −0.14), **but each helps on 12–22% of images.** The per-image signal is non-degenerate (the Week-8 pivot rule is not triggered), and blanket enhancement is worse than none. This matches Wang et al. 2024 and Saleem et al. 2025.
 - Caveat for the write-up: the detector was trained on raw images, so enhanced inputs are slightly out-of-distribution for it (protocol (a) in the handoff). Protocol (b), a detector trained with enhancement augmentation, is the sensitivity check.
 
+### Full labels (notebook 04 commit, 2026-10-02): 0.24 s/image on T4
+
+Mean per-image AP50-95 and Δ vs raw. "helps"/"hurts" here means Δ>0 / Δ<0, **before** the noise threshold.
+
+| method | RUOD (7,000) ap | Δap | helps | hurts | DUO-clean (4,539) ap | Δap | helps | hurts |
+|---|---|---|---|---|---|---|---|---|
+| raw | 0.673 | — | — | — | 0.531 | — | — | — |
+| null_jpeg95 | 0.672 | −0.001 | 21% | 22% | 0.530 | −0.001 | 24% | 29% |
+| clahe | 0.651 | −0.022 | 27% | 50% | 0.486 | −0.046 | 33% | 64% |
+| udcp | 0.631 | −0.041 | 24% | 54% | 0.453 | −0.078 | 26% | 71% |
+| funiegan | 0.607 | −0.066 | 21% | 61% | 0.424 | −0.107 | 23% | 75% |
+| gray_world | 0.597 | −0.075 | 20% | 60% | 0.437 | −0.094 | 26% | 72% |
+| fusion | 0.589 | −0.083 | 20% | 62% | 0.332 | −0.199 | 14% | 84% |
+
+- The raw dataset mAP computed from saved detections (RUOD 0.799/0.561, DUO 0.644/0.402) matches the Ultralytics held-out evals, so the labels are trustworthy.
+- **Every enhancer lowers mean detection AP; the drop is larger on DUO** (out of distribution for the detector).
+- **Key caveat:** the invisible null re-encode "helps" 21–24% of images, the same order as the enhancers. Sign(Δ) alone is mostly noise, so the predictor uses `helps = Δ > τ`, with τ the 95th percentile of |Δ_null| on pred_train. Policy evaluation includes a `noise_oracle` control (best of raw vs null per image) to show how much per-image "oracle" gain is pure noise.
+
+## O4/O5: predictor + selective enhancement (notebook 05)
+- `extract_features.py`: frozen CLIP-B/32, DINOv2-S/14 and ResNet-18 embeddings of the raw image; UIQM, UCIQE, TOPIQ-NR, LIQE and URanker on raw and on every enhanced variant.
+- `train_predictor.py`: ridge, logistic and multi-task MLP (Δ regression + help classification + ranking loss; no-rank ablation; 3-seed ensemble) per backbone. Baselines: `iqa_raw-k` (−Q(raw)) and `iqa_delta-k` (Q(enh) − Q(raw)). Trained on pred_train, tuned on pred_val, reported on pred_test and DUO.
+- `evaluate_policies.py`: dataset mAP for all_raw, all_m, oracle, noise_oracle, learned and IQA-driven policies, with margins tuned on pred_val. The best learned policy is chosen on val, then paired-bootstrapped against all_raw and the best fixed enhancer.
+
 ## Kaggle workflow
 Imported notebooks are frozen copies, so all logic lives in the repo. The first cell of every notebook is
 `%run /kaggle/working/repo/scripts/kaggle_setup.py`, which resets the clone to `origin/main`, reinstalls, and
