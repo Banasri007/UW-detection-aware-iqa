@@ -80,6 +80,12 @@ def main():
     # ---------------- learned predictors
     for bb in args.backbones:
         E_r, E_d = load_embeddings("ruod_pred", bb), load_embeddings("duo_clean", bb)
+        for s_, E in (("ruod_pred", E_r), ("duo_clean", E_d)):
+            need = np.concatenate([idx[k] for k in idx if (k == "duo") == (s_ == "duo_clean")])
+            miss = int((~pd.Index(need).isin(E.index)).sum())
+            if miss:
+                raise SystemExit(f"{miss} images of {s_} have no features yet: "
+                                 f"run scripts/extract_features.py --set {s_} to completion first")
         X = {s: (E_r if s != "duo" else E_d).loc[idx[s]].values for s in idx}
         st = Standardizer().fit(X["train"])
         X = {s: st(v) for s, v in X.items()}

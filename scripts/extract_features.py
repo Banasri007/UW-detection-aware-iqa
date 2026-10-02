@@ -15,6 +15,7 @@ import argparse
 import glob
 import time
 
+import cv2
 import numpy as np
 import pandas as pd
 import torch
@@ -28,6 +29,7 @@ from uwiqa.metrics import uciqe, uiqm
 import build_utility_labels as bul  # same set definitions and image loading
 
 HANDCRAFTED = {"uiqm": uiqm, "uciqe": uciqe}
+MIN_SIDE = 224
 
 
 def _keep(sample):
@@ -89,7 +91,7 @@ def main():
     print(f"{args.set}: {len(df)} images; backbones {list(bbs)}; IQA {args.iqa} on "
           f"{args.methods + list(gpu_enh)}")
 
-    t0, n_done = time.time(), 0
+    t0, n_done, n_upsampled = time.time(), 0, 0
     for s in range(0, len(df), args.shard):
         tag = f"{s // args.shard:04d}"
         if (out / f"iqa_{tag}.csv").exists():
@@ -109,12 +111,22 @@ def main():
             recs += [(rel, m, k, v) for m, k, v in hand_rows]
             if deep_iqa:
                 names = list(small)
-                # all variants share one size (same source, same resize), so score them as one batch
-                batch = torch.from_numpy(np.stack([small[m] for m in names])).permute(0, 3, 1, 2)
-                batch = batch.float().div(255).to(dev)
+                # all variants share one size (same source, same resize), so score them as one batch;
+                # LIQE (and some other pyiqa nets) need a short side >= 224, so upsample tiny/wide images
+                arr = np.stack([small[m] for m in names])
+                if min(arr.shape[1:3]) < MIN_SIDE:
+                    scale = MIN_SIDE / min(arr.shape[1:3])  # not `s`: that is the shard start index
+                    size = (round(arr.shape[2] * scale), round(arr.shape[1] * scale))
+                    arr = np.stack([cv2.resize(a, size, interpolation=cv2.INTER_CUBIC) for a in arr])
+                    n_upsampled += 1
+                batch = torch.from_numpy(arr).permute(0, 3, 1, 2).float().div(255).to(dev)
                 with torch.no_grad():
                     for k, metric in deep_iqa.items():
-                        scores = metric(batch).flatten().float().cpu().numpy()
+                        try:
+                            scores = metric(batch).flatten().float().cpu().numpy()
+                        except Exception as e:  # never lose a multi-hour run to one odd image
+                            print(f"  ! {k} failed on {rel}: {type(e).__name__}: {e}", flush=True)
+                            scores = np.full(len(names), np.nan)
                         recs += [(rel, m, k, float(v)) for m, v in zip(names, scores)]
         np.savez_compressed(out / f"emb_{tag}.npz", images=np.array(rows),
                             **{n: np.stack(v).astype(np.float32) for n, v in embs.items()})
@@ -123,7 +135,9 @@ def main():
         n_done += len(rows)
         el = time.time() - t0
         print(f"shard {tag}: {s + len(rows)}/{len(df)}, {el / n_done:.2f}s/img, "
-              f"ETA {(len(df) - s - len(rows)) * el / n_done / 60:.0f} min", flush=True)
+              f"ETA {(len(df) - s - len(rows)) * el / n_done / 60:.0f} min"
+              + (f" ({n_upsampled} small images upsampled to {MIN_SIDE}px for IQA)" if n_upsampled else ""),
+              flush=True)
 
     iqa = pd.concat([pd.read_csv(f) for f in sorted(glob.glob(str(out / "iqa_*.csv")))])
     iqa.to_csv(out / "iqa.csv", index=False)

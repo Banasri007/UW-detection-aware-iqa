@@ -70,6 +70,10 @@ class MetricRunner:
 
             def run(p, model=model):
                 img = load_rgb(p, self.max_side)
+                if min(img.shape[:2]) < 224:  # LIQE and others assert a short side >= 224
+                    s = 224 / min(img.shape[:2])
+                    img = np.asarray(Image.fromarray(img).resize(
+                        (round(img.shape[1] * s), round(img.shape[0] * s)), Image.BICUBIC))
                 t = torch.from_numpy(img).permute(2, 0, 1).float().div(255).unsqueeze(0)
                 with torch.no_grad():
                     return float(model(t.to(self.device)).item())

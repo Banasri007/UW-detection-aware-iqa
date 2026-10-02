@@ -29,6 +29,12 @@ print("archive type:", kind.strip())
 if "Zip" in kind:
     shutil.unpack_archive(str(archive), str(root), "zip")
 else:  # RAR / 7z
+    if shutil.which("7z") is None:  # not always present on Kaggle images
+        subprocess.run("apt-get -qq update && apt-get -qq install -y p7zip-full p7zip-rar > /dev/null",
+                       shell=True, check=False)
+    if shutil.which("7z") is None:
+        sys.exit("Could not get 7-Zip to unpack the archive. Download UID2021 manually, upload it as a "
+                 "Kaggle Dataset, attach it, and set UID2021_ROOT (see notebook 01, cell 2).")
     subprocess.run(["7z", "x", "-y", f"-o{root}", str(archive)], check=True, stdout=subprocess.DEVNULL)
 os.remove(archive)
 n = sum(1 for p in Path(root).rglob("*") if p.suffix.lower() in {".png", ".jpg", ".jpeg", ".bmp"})
