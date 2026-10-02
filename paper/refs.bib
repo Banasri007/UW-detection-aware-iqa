@@ -1,6 +1,7 @@
 % References for "Seeing Better Is Not Detecting Better".
-% Entries marked VERIFY were flagged in the project handoff as verified only second-hand,
-% or were added from memory: check volume/pages/authors on the publisher page before submission.
+% Metadata of the underwater, IQA and detection references was checked against Crossref and
+% arXiv on 2026-10-03 (authors, venue, volume, pages, DOI). Remaining entries are standard
+% references (CLIP, DINOv2, ResNet, COCO, BRISQUE, NIQE, MUSIQ, VQEG, bootstrap).
 
 @article{panetta2016uiqm,
   author  = {Panetta, Karen and Gao, Chen and Agaian, Sos},
@@ -26,7 +27,8 @@
   author  = {Islam, Md Jahidul and Xia, Youya and Sattar, Junaed},
   title   = {Fast Underwater Image Enhancement for Improved Visual Perception},
   journal = {IEEE Robotics and Automation Letters},
-  volume  = {5}, number = {2}, pages = {3227--3234}, year = {2020}
+  volume  = {5}, number = {2}, pages = {3227--3234}, year = {2020},
+  doi     = {10.1109/LRA.2020.2974710}
 }
 @article{ancuti2018fusion,
   author  = {Ancuti, Codruta O. and Ancuti, Cosmin and De Vleeschouwer, Christophe and Bekaert, Philippe},
@@ -38,42 +40,43 @@
   author    = {Drews Jr., Paulo and do Nascimento, Erickson and Moraes, Filipe and Botelho, Silvia and Campos, Mario},
   title     = {Transmission Estimation in Underwater Single Images},
   booktitle = {Proc. IEEE International Conference on Computer Vision Workshops (ICCVW)},
-  pages     = {825--830}, year = {2013}
+  pages     = {825--830}, year = {2013},
+  doi       = {10.1109/ICCVW.2013.113}
 }
-% VERIFY (added from memory)
 @incollection{zuiderveld1994clahe,
   author    = {Zuiderveld, Karel},
   title     = {Contrast Limited Adaptive Histogram Equalization},
   booktitle = {Graphics Gems IV},
-  publisher = {Academic Press}, pages = {474--485}, year = {1994}
+  publisher = {Academic Press}, pages = {474--485}, year = {1994},
+  doi       = {10.1016/B978-0-12-336156-1.50061-6}
 }
-% VERIFY (added from memory)
 @article{buchsbaum1980grayworld,
-  author  = {Buchsbaum, Gershon},
+  author  = {Buchsbaum, G.},
   title   = {A Spatial Processor Model for Object Colour Perception},
   journal = {Journal of the Franklin Institute},
-  volume  = {310}, number = {1}, pages = {1--26}, year = {1980}
+  volume  = {310}, number = {1}, pages = {1--26}, year = {1980},
+  doi     = {10.1016/0016-0032(80)90058-7}
 }
-% VERIFY: ICIP 2022 (not ICASSP); check page numbers on IEEE Xplore
 @inproceedings{li2022limits,
   author    = {Li, Chau Yi and Cavallaro, Andrea},
   title     = {On the Limits of Perceptual Quality Measures for Enhanced Underwater Images},
   booktitle = {Proc. IEEE International Conference on Image Processing (ICIP)},
-  year      = {2022}, note = {arXiv:2207.05470}
+  pages     = {4148--4152}, year = {2022},
+  doi       = {10.1109/ICIP46576.2022.9897840}
 }
-% VERIFY: MDPI metadata was inconsistent at proposal time; re-check year/volume
-@article{dumic2026reliable,
-  author  = {Dumic, Emil and others},
+@article{palazari2026reliable,
+  author  = {Palazari, Stella and Dumic, Emil},
   title   = {Towards Reliable Evaluation of Underwater Image Enhancement Using Subjective and Objective Analysis},
   journal = {Electronics},
   volume  = {15}, number = {11}, pages = {2412}, year = {2026},
   doi     = {10.3390/electronics15112412}
 }
 @article{wang2024isuie,
-  author  = {Wang, Hongjie and others},
+  author  = {Wang, Yudong and Guo, Jichang and He, Wanru and Gao, Huan and Yue, Huihui and Zhang, Zenan and Li, Chongyi},
   title   = {Is Underwater Image Enhancement All Object Detectors Need?},
   journal = {IEEE Journal of Oceanic Engineering},
-  year    = {2024}, note = {arXiv:2311.18814}
+  volume  = {49}, number = {2}, pages = {606--621}, year = {2024},
+  doi     = {10.1109/JOE.2023.3302888}
 }
 @article{saleem2025influence,
   author  = {Saleem, Ashraf and Awad, Ali and Paheding, Sidike and Lucas, Evan and Havens, Timothy C. and Esselman, Peter C.},
@@ -83,8 +86,8 @@
   doi     = {10.3390/rs17020185}
 }
 @article{awad2026revisiting,
-  author  = {Awad, Ali and others},
-  title   = {Revisiting Underwater Image Enhancement for Object Detection: A Unified Quality-Detection Evaluation Framework},
+  author  = {Awad, Ali and Saleem, Ashraf and Paheding, Sidike and Lucas, Evan and Al-Ratrout, Serein and Havens, Timothy C.},
+  title   = {Revisiting Underwater Image Enhancement for Object Detection: A Unified Quality--Detection Evaluation Framework},
   journal = {Journal of Imaging},
   volume  = {12}, number = {1}, pages = {18}, year = {2026},
   doi     = {10.3390/jimaging12010018}
@@ -111,52 +114,56 @@
   author    = {Wang, Jianyi and Chan, Kelvin C. K. and Loy, Chen Change},
   title     = {Exploring {CLIP} for Assessing the Look and Feel of Images},
   booktitle = {Proc. AAAI Conference on Artificial Intelligence},
-  year      = {2023}
+  volume    = {37}, number = {2}, pages = {2555--2563}, year = {2023},
+  doi       = {10.1609/aaai.v37i2.25353}
 }
 @article{chen2024topiq,
   author  = {Chen, Chaofeng and Mo, Jiadi and Hou, Jingwen and Wu, Haoning and Liao, Liang and Sun, Wenxiu and Yan, Qiong and Lin, Weisi},
   title   = {{TOPIQ}: A Top-Down Approach From Semantics to Distortions for Image Quality Assessment},
   journal = {IEEE Transactions on Image Processing},
-  year    = {2024}, note = {arXiv:2308.03060}
+  volume  = {33}, pages = {2404--2418}, year = {2024},
+  doi     = {10.1109/TIP.2024.3378466}
 }
 @inproceedings{zhang2023liqe,
   author    = {Zhang, Weixia and Zhai, Guangtao and Wei, Ying and Yang, Xiaokang and Ma, Kede},
   title     = {Blind Image Quality Assessment via Vision-Language Correspondence: A Multitask Learning Perspective},
   booktitle = {Proc. IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-  year      = {2023}
+  pages     = {14071--14081}, year = {2023},
+  doi       = {10.1109/CVPR52729.2023.01352}
 }
 @inproceedings{yang2022maniqa,
   author    = {Yang, Sidi and Wu, Tianhe and Shi, Shuwei and Lao, Shanshan and Gong, Yuan and Cao, Mingdeng and Wang, Jiahao and Yang, Yujiu},
   title     = {{MANIQA}: Multi-Dimension Attention Network for No-Reference Image Quality Assessment},
   booktitle = {Proc. IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW)},
-  year      = {2022}
+  pages     = {1190--1199}, year = {2022},
+  doi       = {10.1109/CVPRW56347.2022.00126}
 }
 @inproceedings{golestaneh2022tres,
   author    = {Golestaneh, S. Alireza and Dadsetan, Saba and Kitani, Kris M.},
   title     = {No-Reference Image Quality Assessment via Transformers, Relative Ranking, and Self-Consistency},
   booktitle = {Proc. IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
-  year      = {2022}
+  pages     = {3989--3999}, year = {2022},
+  doi       = {10.1109/WACV51458.2022.00404}
 }
-% VERIFY (added from memory)
 @inproceedings{agnolucci2024arniqa,
   author    = {Agnolucci, Lorenzo and Galteri, Leonardo and Bertini, Marco and Del Bimbo, Alberto},
   title     = {{ARNIQA}: Learning Distortion Manifold for Image Quality Assessment},
   booktitle = {Proc. IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
-  year      = {2024}
+  pages     = {188--197}, year = {2024},
+  doi       = {10.1109/WACV57701.2024.00026}
 }
-% VERIFY (added from memory; QualiCLIP as packaged in IQA-PyTorch)
-@article{agnolucci2024qualiclip,
-  author  = {Agnolucci, Lorenzo and Galteri, Leonardo and Bertini, Marco},
-  title   = {Quality-Aware Image-Text Alignment for Real-World Image Quality Assessment},
-  journal = {arXiv preprint arXiv:2403.11176},
-  year    = {2024}
+@misc{agnolucci2024qualiclip,
+  author       = {Agnolucci, Lorenzo and Galteri, Leonardo and Bertini, Marco},
+  title        = {Quality-Aware Image-Text Alignment for Opinion-Unaware Image Quality Assessment},
+  howpublished = {arXiv preprint arXiv:2403.11176},
+  year         = {2024}
 }
-% VERIFY (added from memory)
 @inproceedings{guo2023uranker,
   author    = {Guo, Chunle and Wu, Ruiqi and Jin, Xin and Han, Linghao and Zhang, Weidong and Chai, Zhi and Li, Chongyi},
   title     = {Underwater Ranker: Learn Which Is Better and How to Be Better},
   booktitle = {Proc. AAAI Conference on Artificial Intelligence},
-  year      = {2023}
+  volume    = {37}, number = {1}, pages = {702--709}, year = {2023},
+  doi       = {10.1609/aaai.v37i1.25147}
 }
 @article{hou2023uid2021,
   author  = {Hou, Guojia and Li, Yuxuan and Yang, Huan and Li, Kunqian and Pan, Zhenkuan},
@@ -165,30 +172,31 @@
   volume  = {19}, number = {4}, pages = {1--24}, year = {2023},
   doi     = {10.1145/3578584}
 }
-% VERIFY (verified second-hand only)
 @article{jiang2022saud,
   author  = {Jiang, Qiuping and Gu, Yuese and Li, Chongyi and Cong, Runmin and Shao, Feng},
   title   = {Underwater Image Enhancement Quality Evaluation: Benchmark Dataset and Objective Metric},
   journal = {IEEE Transactions on Circuits and Systems for Video Technology},
-  year    = {2022}
+  volume  = {32}, number = {9}, pages = {5959--5974}, year = {2022},
+  doi     = {10.1109/TCSVT.2022.3164918}
 }
-% VERIFY (verified second-hand only)
 @article{fu2023ruod,
   author  = {Fu, Chenping and Liu, Risheng and Fan, Xin and Chen, Puyang and Fu, Hao and Yuan, Wanqi and Zhu, Ming and Luo, Zhongxuan},
   title   = {Rethinking General Underwater Object Detection: Datasets, Challenges, and Solutions},
   journal = {Neurocomputing},
-  volume  = {517}, pages = {243--256}, year = {2023}
+  volume  = {517}, pages = {243--256}, year = {2023},
+  doi     = {10.1016/j.neucom.2022.10.039}
 }
 @inproceedings{liu2021duo,
   author    = {Liu, Chongwei and Li, Haojie and Wang, Shuchang and Zhu, Ming and Wang, Dong and Fan, Xin and Wang, Zhihui},
   title     = {A Dataset and Benchmark of Underwater Object Detection for Robot Picking},
   booktitle = {Proc. IEEE International Conference on Multimedia \& Expo Workshops (ICMEW)},
-  year      = {2021}, note = {arXiv:2106.05681}
+  pages     = {1--6}, year = {2021},
+  doi       = {10.1109/ICMEW53276.2021.9455997}
 }
-% VERIFY: authors/venue of the ODverse33 benchmark whose re-split Kaggle copy we used
 @misc{odverse33,
-  title        = {{ODverse33}: Is the New {YOLO} Version Always Better? {A} Multi-Domain Benchmark from {YOLOv5} to {v11}},
-  howpublished = {arXiv preprint},
+  author       = {Jiang, Tianyou and Zhong, Yang},
+  title        = {{ODverse33}: Is the New {YOLO} Version Always Better? {A} Multi Domain Benchmark from {YOLO} v5 to v11},
+  howpublished = {arXiv preprint arXiv:2502.14314},
   year         = {2025}
 }
 @misc{chen2022iqapytorch,
