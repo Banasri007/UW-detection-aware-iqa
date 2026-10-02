@@ -112,7 +112,8 @@ if have(p):
     ax.axhline(0, color=MUTED, lw=0.6)
     tau = float(np.quantile(np.abs(d["null_jpeg95"]), 0.95))
     ax.axhspan(-tau, tau, color=GRID, alpha=0.8, zorder=0, label=f"noise band ±{tau:.2f}")
-    ax.set_xticks(np.arange(1, len(order) + 1), [nice(m).replace(" (JPEG q95)", "\n(JPEG q95)") for m in order])
+    two_line = {"null_jpeg95": "Null\n(JPEG q95)", "funiegan": "FUnIE-\nGAN", "gray_world": "Gray-\nworld"}
+    ax.set_xticks(np.arange(1, len(order) + 1), [two_line.get(m, nice(m)) for m in order], fontsize=6.5)
     ax.set_ylim(-0.6, 0.6)
     ax.set_ylabel(r"$\Delta$AP$_{50:95}$ vs raw")
     ax.legend(loc="lower left", frameon=False)

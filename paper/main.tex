@@ -287,8 +287,8 @@ The backbone and the ranking loss barely matter (SRCC 0.31--0.32), which suggest
 Policy & mAP & $\Delta$ & mAP & $\Delta$ \\
 \midrule
 Always raw & 0.5548 & -- & 0.4020 & -- \\
-Always best enhancer & 0.5299 & $-$0.025 & 0.3420 & $-$0.060 \\
-Always worst enhancer & 0.4550 & $-$0.100 & 0.1946 & $-$0.207 \\
+Always CLAHE (best on RUOD) & 0.5299 & $-$0.025 & 0.3393 & $-$0.063 \\
+Always fusion (worst) & 0.4550 & $-$0.100 & 0.1946 & $-$0.207 \\
 NR-IQA choice, UCIQE & 0.5087 & $-$0.046 & 0.3363 & $-$0.066 \\
 NR-IQA choice, TOPIQ & 0.4655 & $-$0.089 & 0.2279 & $-$0.174 \\
 NR-IQA, margin tuned (AP) & 0.5541 & $-$0.001 & 0.3904 & $-$0.012 \\
@@ -314,7 +314,7 @@ The per-image oracle gains 0.025 (RUOD) and 0.021 (DUO) mAP over always-raw, abo
 
 When the model and margin are tuned on validation for mean per-image AP, the selected learned policy (ridge on DINOv2) enhances 3\% of RUOD images and ties always-raw (+0.0003, CI includes zero). When they are tuned directly on validation \emph{dataset} mAP, the selected policy (logistic on CLIP) enhances 3.9\% of images. It \emph{loses} a small but significant 0.0017 mAP on RUOD and 0.0010 on DUO: the margin that looks best on validation does not transfer. Margin-tuned NR-IQA policies behave the same way ($-$0.0002 to $-$0.012).
 
-All tuned policies beat every always-enhance policy by 0.024--0.06 mAP, but only because they learn to almost never enhance. Applying the enhancer with the best NR-IQA gain, as common practice suggests, is harmful: it costs 0.046--0.089 mAP on RUOD and 0.066--0.174 on DUO.
+All tuned policies beat every always-enhance policy by 0.024--0.062 mAP, but only because they learn to almost never enhance. Applying the enhancer with the best NR-IQA gain, as common practice suggests, is harmful: it costs 0.046--0.089 mAP on RUOD and 0.066--0.174 on DUO.
 
 The learned predictor's ranking signal (SRCC 0.32, AUROC 0.60) is thus too weak to pick out the $\approx$11\% of images that benefit, with enough precision to outweigh the losses on the rest.
 

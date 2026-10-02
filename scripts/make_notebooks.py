@@ -163,7 +163,8 @@ NB06 = [
     (C, "# All paper figures (PDF) and LaTeX table rows\n!python scripts/make_figures.py"),
     (C, "!cd /kaggle/working/results && zip -qr /kaggle/working/paper_results.zip paper tables policies "
         "predictor/summary_test.csv predictor/summary_duo.csv predictor/per_method_test.csv "
-        "predictor/per_method_duo.csv && ls -lh /kaggle/working/paper_results.zip"),
+        "predictor/per_method_duo.csv utility/ruod_pred/main/scores.csv utility/duo_clean/main/scores.csv "
+        "stress/o2_uid2021_raw.csv stress/o2_uid2021_summary.csv && ls -lh /kaggle/working/paper_results.zip"),
 ]
 
 if __name__ == "__main__":
