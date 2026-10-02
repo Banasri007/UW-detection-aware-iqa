@@ -151,7 +151,8 @@ Every metric is significantly worse than URanker (paired bootstrap p ≈ 0).
   - Per-method mean MOS is sensible: UWCNN 1.56 < raw 1.88 < … < UWB-VCSE 6.78.
   - Images are 512×384; about 7% are RGBA (alpha is dropped on load).
   - The shortfall vs the paper is uniform across all six subsets (UCIQE 0.23–0.46 vs 0.54–0.67). Remaining explanations: (a) the MOS revision (77 vs 52 observers; the README switched Drive files in Dec 2022), or (b) the paper's MATLAB implementations.
-  - `compare_uid2021_mos.py` downloads the pre-Dec-2022 release and recomputes SROCC against both MOS versions.
+  - `compare_uid2021_mos.py` was meant to test (a), but the pre-Dec-2022 Drive file is no longer public (2026-10-02), so (a) vs (b) cannot be resolved.
+  - **Decision: the benchmark stands.** Report it on the released 77-observer MOS with open Python implementations, and state the gap to Table 9 and its two possible causes explicitly. The Week-4 gate's purpose ("the benchmark is not broken") is met: alignment is verified, per-method MOS is sensible, and URanker reaches 0.62. Its numeric threshold (TOPIQ ≥ 0.7, taken from Dumic et al.'s 4-method study) does not carry over to UID2021's 15 methods. That is itself evidence for Gap 2 (in-air NR-IQA transfers poorly to underwater images).
 - Intra-scene SRCC (ranking enhancements of the same image): in-air deep metrics collapse to ≈ 0 (CLIP-IQA, QualiCLIP, MANIQA, TReS). URanker keeps 0.58. This holds whatever the gate outcome is.
 
 **O2 stress test** (Spearman of score vs distortion strength 0 → 3, mean over 60 raw images; +1 = score rises steadily as the image is over-processed):

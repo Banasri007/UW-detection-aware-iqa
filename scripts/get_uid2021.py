@@ -26,6 +26,9 @@ def fetch(url: str, root: Path) -> int:
         subprocess.run(["gdown", "-q", url, "-O", str(archive)], check=True)
     kind = subprocess.run(["file", "-b", str(archive)], capture_output=True, text=True).stdout
     print("archive type:", kind.strip())
+    if "HTML" in kind:  # Drive returned a permission / quota page instead of the file
+        os.remove(archive)
+        raise RuntimeError("Google Drive returned a web page, not the archive (file not public or quota hit)")
     if "Zip" in kind:
         shutil.unpack_archive(str(archive), str(root), "zip")
     else:  # RAR / 7z
