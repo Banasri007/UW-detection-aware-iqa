@@ -73,12 +73,13 @@ async function settle(id) {
 }
 
 /* ------------------------------------------------------------------ charts (SVG) */
-function lineChart(series, { w = 340, h = 120, ymax } = {}) {
+function lineChart(series, { w = 340, h = 120, ymax, clip = false } = {}) {
+  // clip: scale to the interior bins so a spike of pure black / saturated pixels does not flatten the rest
   const n = series[0].data.length;
-  const top = ymax || Math.max(...series.flatMap((s) => s.data)) || 1;
+  const top = ymax || Math.max(...series.flatMap((s) => (clip ? s.data.slice(1, -1) : s.data))) || 1;
   const pad = 4;
   const lines = series.map((s) => {
-    const pts = s.data.map((y, i) => `${(pad + (i / (n - 1)) * (w - 2 * pad)).toFixed(1)},${(h - pad - (y / top) * (h - 2 * pad)).toFixed(1)}`).join(" ");
+    const pts = s.data.map((y, i) => `${(pad + (i / (n - 1)) * (w - 2 * pad)).toFixed(1)},${(h - pad - (Math.min(y, top) / top) * (h - 2 * pad)).toFixed(1)}`).join(" ");
     return `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${s.width || 1.6}" ${s.dash ? `stroke-dasharray="${s.dash}"` : ""} stroke-linejoin="round"/>`;
   }).join("");
   return `<svg viewBox="0 0 ${w} ${h}" role="img"><line class="axis" x1="0" y1="${h - pad}" x2="${w}" y2="${h - pad}"/>${lines}</svg>`;
@@ -160,12 +161,12 @@ async function pageEnhance(id) {
     right: v.key === "raw" ? `${d.size[0]} × ${d.size[1]}` : "", raw: v.key === "raw" })).join("");
   const hists = d.variants.map((v) => `<div class="chart"><h4>${esc(v.name)}</h4>${lineChart([
       { data: d.hist[v.key][0], color: "#0a0a0a" }, { data: d.hist[v.key][1], color: "#8a8a8a" },
-      { data: d.hist[v.key][2], color: "#b5b5b5", dash: "4 3" }])}</div>`).join("");
+      { data: d.hist[v.key][2], color: "#b5b5b5", dash: "4 3" }], { clip: true })}</div>`).join("");
   VIEW.innerHTML = head("01 — Enhancement", "Six versions of one image",
     "The raw image and five enhanced versions, produced in memory at the study's working resolution of 1280 px. CLAHE, gray-world, UDCP and fusion are our OpenCV implementations; FUnIE-GAN uses the official weights.") +
     `<div class="grid g3">${cards}</div>
     <h2 class="sec">Colour histograms</h2>
-    <p class="sec-sub">Pixel distribution of each channel, computed with <span class="mono">cv2.calcHist</span> (Lab 2). Raw underwater images have a weak red channel; each enhancer redistributes the channels differently.</p>
+    <p class="sec-sub">Pixel distribution of each channel, computed with <span class="mono">cv2.calcHist</span> (Lab 2). Raw underwater images have a weak red channel; each enhancer redistributes the channels differently. The y-axis ignores the first and last bin (pure black and saturated pixels).</p>
     <div class="keyline"><span><i></i>red</span><span><i class="g"></i>green</span><span><i class="b"></i>blue</span></div>
     <div class="charts grid g3">${hists}</div>${foot()}`;
 }
@@ -261,7 +262,7 @@ async function labResults(id) {
       <div class="pixel"><span class="swatch" id="sw"></span><span id="px">Click the first image to read a pixel's RGB value.</span></div>`;
   }
   if (d.hist) post = `<h2 class="sec">Grey-level histogram</h2><div class="keyline"><span><i></i>equalised</span><span><i class="b"></i>original</span></div>
-      <div class="chart">${lineChart([{ data: d.hist.original, color: "#b5b5b5", dash: "4 3" }, { data: d.hist.equalised, color: "#0a0a0a" }], { w: 900, h: 160 })}</div>`;
+      <div class="chart">${lineChart([{ data: d.hist.original, color: "#b5b5b5", dash: "4 3" }, { data: d.hist.equalised, color: "#0a0a0a" }], { w: 900, h: 160, clip: true })}</div>`;
   if (d.centers) post = `<h2 class="sec">Cluster centres</h2><div class="swatches">${d.centers.map((c) => `<span style="background:rgb(${c.join(",")})" title="rgb(${c.join(", ")})"></span>`).join("")}</div>`;
   if (d.lbp_hist) post = `<h2 class="sec">LBP histogram</h2><div class="chart">${barChart(d.lbp_hist.map((v, i) => ({ name: String(i), value: v, raw: true })), { w: 900, h: 170, d: 2 })}</div>`;
   const ncol = d.items.length === 4 ? "g2" : d.items.length >= 7 ? "g4" : "g3";
@@ -293,7 +294,11 @@ function overlay(rec, gt, conf, classes) {
       <rect x="${x1}" y="${y1}" width="${x2 - x1}" height="${y2 - y1}" fill="none" stroke="${inner}" stroke-width="1.6" ${dash ? 'stroke-dasharray="5 3"' : ""} vector-effect="non-scaling-stroke"/>`;
   };
   const svg = [...(gt || []).map((b) => rect(b, "#0a0a0a", "#ffffff", true)), ...boxes.map((b) => rect(b, "#0a0a0a", "#ffffff", false))].join("");
-  const lbl = boxes.map((b) => `<span class="lbl" style="left:${b[0] * 100}%;top:${b[1] * 100}%">${esc(classes[b[5]] || b[5])} ${b[4].toFixed(2)}</span>`).join("");
+  // labels sit above the box; boxes touching the top get them inside, boxes on the right are right-aligned
+  const lbl = boxes.map((b) => {
+    const x = b[0] > 0.6 ? `right:${(1 - b[2]) * 100}%` : `left:${b[0] * 100}%`;
+    return `<span class="lbl${b[1] < 0.08 ? " in" : ""}" style="${x};top:${b[1] * 100}%">${esc(classes[b[5]] || b[5])} ${b[4].toFixed(2)}</span>`;
+  }).join("");
   return { html: `<div class="boxes"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${svg}</svg>${lbl}</div>`, n: boxes.length,
            mean: boxes.length ? boxes.reduce((a, b) => a + b[4], 0) / boxes.length : null };
 }
@@ -331,7 +336,9 @@ async function pageDetect(id) {
     $("#dettable").innerHTML = `<h2 class="sec">Per-version results</h2>
       <div class="tbl-wrap"><table><thead><tr><th>Version</th><th class="num">Detections ≥ ${S.conf.toFixed(2)}</th><th class="num">Mean confidence</th>
       ${hasGT ? `<th class="num">AP 50:95</th><th class="num">AP 50</th><th class="num">F1 @ 0.25</th><th class="num">ΔAP vs raw</th>${Object.keys(d.study_dap).length ? '<th class="num">ΔAP in study</th>' : ""}` : ""}</tr></thead><tbody>${rows}</tbody></table></div>
-      ${hasGT ? `<div class="callout"><span class="k">This image</span><p>${d.gt.length} ground-truth objects. Best version for the detector: <b>${esc(best.name)}</b> (AP ${fmt(best.ap)} vs raw ${fmt(d.variants[0].ap)}).
+      ${hasGT ? `<div class="callout"><span class="k">This image</span><p>${d.gt.length} ground-truth objects. ${best.key === "raw"
+          ? `No enhancer beats the raw image here (raw AP ${fmt(best.ap)}).`
+          : `Best version for the detector: <b>${esc(best.name)}</b> (AP ${fmt(best.ap)} vs raw ${fmt(d.variants[0].ap)}).`}
         Across the 7,000 held-out images of the study every enhancer lowered mean AP, yet each helped about one image in nine by more than the noise threshold of ${d.tau}.</p></div>`
         : `<p class="note">Uploaded images have no ground truth, so only detection counts and confidences are shown.</p>`}`;
   };

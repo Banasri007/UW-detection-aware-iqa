@@ -35,9 +35,9 @@ button, input { font: inherit; color: inherit; }
         background: linear-gradient(90deg, #fff 50%, var(--ink) 50%); flex: none; }
 .brand-name { font: 700 16px/1 var(--sans); letter-spacing: .02em; }
 .brand-sub { font-size: 12px; color: #9b9b9b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nav { display: flex; gap: 4px; margin-left: auto; height: 100%; }
+.nav { display: flex; gap: 4px; margin-left: auto; height: 100%; flex: none; }
 .nav a {
-  display: flex; align-items: center; gap: 8px; padding: 0 14px; height: 100%;
+  display: flex; align-items: center; gap: 8px; padding: 0 14px; height: 100%; white-space: nowrap;
   text-decoration: none; color: #9b9b9b; font-size: 13px; font-weight: 500;
   border-bottom: 2px solid transparent; transition: color .15s, border-color .15s;
 }
@@ -45,7 +45,7 @@ button, input { font: inherit; color: inherit; }
 .nav a:hover { color: #fff; }
 .nav a.active { color: #fff; border-bottom-color: #fff; }
 .nav a.active span { color: #9b9b9b; }
-.sys { display: flex; gap: 14px; font: 500 11px/1 var(--mono); color: #9b9b9b; letter-spacing: .04em; }
+.sys { display: flex; flex: none; gap: 14px; white-space: nowrap; font: 500 11px/1 var(--mono); color: #9b9b9b; letter-spacing: .04em; }
 .sys .on::before, .sys .off::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 6px;
   border-radius: 50%; vertical-align: 1px; }
 .sys .on::before { background: #fff; }
@@ -221,6 +221,7 @@ input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 
 .boxes svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .boxes .lbl { position: absolute; transform: translateY(-100%); background: var(--ink); color: #fff;
               font: 500 10px/1 var(--mono); padding: 3px 5px; white-space: nowrap; }
+.boxes .lbl.in { transform: none; }
 .boxes .lbl.gt { background: #fff; color: var(--ink); }
 
 /* loading */
@@ -244,6 +245,9 @@ input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 
 footer.foot { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; justify-content: space-between;
               font: 500 11px/1.4 var(--mono); color: var(--faint); }
 
+@media (max-width: 1320px) {
+  .brand-sub { display: none; }
+}
 @media (max-width: 1100px) {
   .hero { grid-template-columns: 1fr; }
   .g3, .g4 { grid-template-columns: repeat(2, 1fr); }

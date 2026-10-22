@@ -568,8 +568,9 @@ def content():
             ("ui_quality", "Quality page: live UIQM components and UCIQE next to the true detection change, "
                            "and the benchmark reliability table"),
             ("ui_labS", "Lab page, summary tab: low-level features of every version"),
-            ("ui_detect", "Detection page: YOLO11-s detections on every version with per-image AP and ΔAP"),
-            ("ui_detect_2", "Detection page for a second sample image")]:
+            ("ui_detect", "Detection page: YOLO11-s detections on every version with per-image AP and ΔAP; "
+                          "on this image UDCP helps (+0.075) while fusion hurts (−0.350)"),
+            ("ui_detect_2", "Detection page for an image on which every enhancer lowers AP (−0.106 to −0.223)")]:
         B.append(("shot", name, f"Application snapshot: {cap}"))
     P("Screenshots of the Lab 1–5 pages appear with the corresponding sections of Chapter 5.")
     H2("4.9 Summary of findings")
