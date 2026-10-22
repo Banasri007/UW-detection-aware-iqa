@@ -52,7 +52,7 @@ button, input { font: inherit; color: inherit; }
 .sys .off::before { border: 1px solid #6b6b6b; }
 
 /* ------------------------------------------------------------ shell */
-.shell { display: grid; grid-template-columns: var(--picker) 1fr; min-height: calc(100vh - var(--topbar));
+.shell { display: grid; grid-template-columns: var(--picker) minmax(0, 1fr); min-height: calc(100vh - var(--topbar));
          background: linear-gradient(to right, var(--soft-2) calc(var(--picker) - 1px), var(--line) calc(var(--picker) - 1px), var(--line) var(--picker), var(--bg) var(--picker)); }
 .picker {
   position: sticky; top: var(--topbar); height: calc(100vh - var(--topbar)); overflow-y: auto;
@@ -255,8 +255,14 @@ footer.foot { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--l
   .brand-sub { display: none; }
 }
 @media (max-width: 760px) {
-  .shell { grid-template-columns: 1fr; }
-  .picker { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); }
+  .shell { grid-template-columns: minmax(0, 1fr); background: var(--bg); }
+  .topbar { gap: 12px; padding: 0 12px; }
+  .brand { flex: none; }
+  .nav { flex: 1 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .tabs { overflow-x: auto; }
+  .tabs button { flex: none; }
+  .seg { display: flex; flex-wrap: wrap; }
+  .picker { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); background: var(--soft-2); }
   .thumbs { grid-template-columns: repeat(3, 1fr); }
   .main { padding: 28px 16px 60px; }
   .g2, .g3, .g4 { grid-template-columns: 1fr; }

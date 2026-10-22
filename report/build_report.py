@@ -444,10 +444,10 @@ def content():
     P("The duplicate search found 7,979 near-duplicate pairs: **3,252 link RUOD to DUO** and **1,609 cross the public "
       "RUOD train/validation/test splits**. 3,190 of the 7,782 DUO images share a duplicate group with RUOD; only the "
       "remaining 4,539 labelled images were used as the cross-dataset test. Figure 4.1 shows examples.")
-    FIG(ASSETS / "snap_dups_0_20.png", "Snapshot: identical frames found across RUOD and DUO (left/right, Hamming "
-        "distance 0) and borderline duplicates across RUOD splits (distance 20).", 4.6)
-    FIG(ASSETS / "snap_dups_21_26.png", "Snapshot: pairs at distance 21–26 crossing RUOD splits; all are frames of the "
-        "same scene, so the threshold was raised to 32.", 4.6)
+    FIG(ASSETS / "snap_dups_0_20_print.png", "Snapshot: identical frames found across RUOD and DUO (top two rows, "
+        "Hamming distance 0) and borderline duplicates across RUOD splits (bottom two rows, distance 20).", 6.3)
+    FIG(ASSETS / "snap_dups_21_26_print.png", "Snapshot: pairs at distance 21–26 crossing RUOD splits; all are frames "
+        "of the same scene, so the threshold was raised to 32.", 6.3)
     H2("4.3 NR-IQA metrics vs. human opinion")
     rows = [["URanker", "0.623", "[0.581, 0.665]", "0.640", "0.445", "0.578"],
             ["LIQE-mix", "0.484", "[0.434, 0.529]", "0.480", "0.334", "0.381"],
@@ -493,7 +493,7 @@ def content():
       "not by colour distortion; MUSIQ and TOPIQ reward over-sharpening. UIQM rises slightly under mild red "
       "over-compensation before falling, which a single correlation hides.")
     H2("4.5 Effect of enhancement on detection")
-    FIG(ASSETS / "snap_enhancers_grid.png", "Snapshot from the labelling run: raw held-out RUOD images and the five "
+    FIG(ASSETS / "snap_enhancers_grid_print.png", "Snapshot from the labelling run: raw held-out RUOD images and the five "
         "enhanced versions.", 6.4)
     TAB("Mean per-image AP50:95 and change vs. raw. 'helps' / 'hurts' count ΔAP > 0 / < 0 before noise calibration.",
         ["Method", "RUOD ΔAP", "helps", "hurts", "DUO ΔAP", "helps", "hurts"], [
@@ -564,11 +564,11 @@ def content():
       "test images from the bundled samples.")
     for name, cap in [
             ("ui_overview", "Overview page with the navigation bar, image picker and key results"),
-            ("ui_enhance", "Enhancement page: raw image, five enhanced versions and colour histograms"),
-            ("ui_quality", "Quality page: live UIQM components and UCIQE next to the true detection change, "
+            ("ui_enhance", "Enhancement page with the raw image, five enhanced versions and colour histograms"),
+            ("ui_quality", "Quality page with live UIQM components and UCIQE next to the true detection change, "
                            "and the benchmark reliability table"),
-            ("ui_labS", "Lab page, summary tab: low-level features of every version"),
-            ("ui_detect", "Detection page: YOLO11-s detections on every version with per-image AP and ΔAP; "
+            ("ui_labS", "Lab page, summary tab with low-level features of every version"),
+            ("ui_detect", "Detection page with YOLO11-s detections on every version and per-image AP and ΔAP; "
                           "on this image UDCP helps (+0.075) while fusion hurts (−0.350)"),
             ("ui_detect_2", "Detection page for an image on which every enhancer lowers AP (−0.106 to −0.223)")]:
         B.append(("shot", name, f"Application snapshot: {cap}"))
@@ -632,7 +632,7 @@ def content():
          src(registry.resize_long_side) + "\n\n" + src(registry._jpeg_roundtrip))
     CODE("Rotation and drawing rectangles in the demo (app/vision.py).",
          src(V.rotate) + "\n\n" + code_lines(V.draw_boxes, "out = img.copy()", "cv2.rectangle(out, (x1, y1)"))
-    B.append(("shot", "ui_lab1", "Application snapshot: demo, Lab 1 tab (image information, pixel inspector, grayscale, rotation, resizing)"))
+    B.append(("shot", "ui_lab1", "Application snapshot: Lab 1 tab (image information, pixel inspector, grayscale, rotation, resizing)"))
     H2("5.2 Lab 2: Image enhancement")
     P("Two of the five enhancers are Lab 2 techniques. CLAHE is a local, contrast-limited form of histogram "
       "equalisation applied to the lightness channel; gray-world is a colour-balance correction. The fusion enhancer "
@@ -644,7 +644,7 @@ def content():
          src(classical.clahe) + "\n\n" + src(classical._gray_world))
     CODE("Michelson-type block contrast in UIQM (src/uwiqa/metrics/uiqm.py).", src(uiqm_mod.uiconm))
     CODE("Histogram equalisation and gamma in the demo (app/vision.py).", src(V.hist_equalize) + "\n\n" + src(V.gamma))
-    B.append(("shot", "ui_lab2", "Application snapshot: demo, Lab 2 tab (negative, log, gamma, contrast stretching, histogram equalisation, CLAHE)"))
+    B.append(("shot", "ui_lab2", "Application snapshot: Lab 2 tab (negative, log, gamma, contrast stretching, histogram equalisation, CLAHE)"))
     H2("5.3 Lab 3: Image filtering")
     P("UIQM measures sharpness from the Sobel gradient magnitude of each colour channel. The fusion enhancer uses "
       "Gaussian blurring (for its sharpened input and saliency map) and the Laplacian (for its contrast weight), and "
@@ -655,7 +655,7 @@ def content():
     CODE("Sobel gradient magnitude in UIQM's sharpness term (src/uwiqa/metrics/uiqm.py).", src(uiqm_mod._sobel_mag))
     CODE("Unsharp masking distortion (src/uwiqa/enhance/sweeps.py) and box-filter guided filter in UDCP "
          "(src/uwiqa/enhance/classical.py).", src(sweeps.unsharp) + "\n\n" + src(classical._guided_filter))
-    B.append(("shot", "ui_lab3", "Application snapshot: demo, Lab 3 tab (box, Gaussian and median filters, Sobel, Laplacian, Canny, unsharp masking)"))
+    B.append(("shot", "ui_lab3", "Application snapshot: Lab 3 tab (box, Gaussian and median filters, Sobel, Laplacian, Canny, unsharp masking)"))
     H2("5.4 Lab 4: Image segmentation")
     P("Thresholding appears in three places: each dHash bit is a binary threshold of a pixel difference, UDCP selects "
       "the brightest 0.1% of its dark channel to estimate the background light, and the noise threshold τ turns the "
@@ -665,7 +665,7 @@ def content():
     CODE("Difference hash: binary comparisons of neighbouring pixels (src/uwiqa/data/dedup.py).", src(dedup.dhash))
     CODE("Otsu thresholding and k-means colour segmentation in the demo (app/vision.py).",
          src(V.otsu) + "\n\n" + src(V.kmeans_segment))
-    B.append(("shot", "ui_lab4", "Application snapshot: demo, Lab 4 tab (Otsu and adaptive thresholding, k-means segmentation)"))
+    B.append(("shot", "ui_lab4", "Application snapshot: Lab 4 tab (Otsu and adaptive thresholding, k-means segmentation)"))
     H2("5.5 Lab 5: Feature extraction")
     P("Feature extraction is central to the predictor: every raw image is represented by a frozen deep feature vector "
       "(CLIP, DINOv2 or ResNet-18), the representation-learning view of Lab 5. UIQM and UCIQE are task-specific "
@@ -677,7 +677,7 @@ def content():
     CODE("Low-level feature summary used to compare raw and enhanced images in the demo (app/vision.py).",
          src(V.feature_summary))
     CODE("Per-image AP from precision and recall (src/uwiqa/detect/metrics.py).", src(dm._ap_from_tp))
-    B.append(("shot", "ui_lab5", "Application snapshot: demo, Lab 5 tab (SIFT, FAST, Harris, HOG, LBP)"))
+    B.append(("shot", "ui_lab5", "Application snapshot: Lab 5 tab (SIFT, FAST, Harris, HOG, LBP)"))
     H2("5.6 Lab topics not used")
     P("Video reading and writing (Lab 1), histogram specification (Lab 2), the Hough transform, region growing and region "
       "splitting (Lab 4) were not needed for this project; the image datasets are still images, and object localisation "
@@ -919,6 +919,90 @@ def split_tall(path: Path, max_ratio: float = 1.3) -> list[Path]:
     return out
 
 
+# Labels of the Kaggle snapshot figures, row by row (left, right, Hamming distance), as printed in the originals.
+DUP_LABELS = {
+    "snap_dups_0_20": [("ruod/train", "duo/val", 0), ("ruod/train", "duo/test", 0), ("ruod/train", "duo/train", 0),
+                       ("ruod/train", "duo/train", 0), ("ruod/test", "ruod/train", 20), ("ruod/train", "ruod/val", 20),
+                       ("ruod/test", "ruod/train", 20), ("ruod/train", "ruod/val", 20)],
+    "snap_dups_21_26": [("ruod/train", "ruod/val", 21), ("ruod/train", "ruod/val", 22), ("ruod/test", "ruod/train", 25),
+                        ("ruod/train", "ruod/val", 25), ("ruod/train", "ruod/val", 26), ("ruod/test", "ruod/train", 26)],
+}
+GRID_LABELS = ["Raw", "CLAHE", "Gray-world", "UDCP", "Fusion", "FUnIE-GAN"]
+
+
+def _bands(on: np.ndarray, min_len: int) -> list[tuple[int, int]]:
+    """Runs of True in a 1-D mask that are at least min_len long."""
+    edges = np.flatnonzero(np.diff(np.r_[0, on.astype(int), 0]))
+    return [(a, b) for a, b in zip(edges[::2], edges[1::2]) if b - a >= min_len]
+
+
+def _font(px: int):
+    from PIL import ImageFont
+    for name in ("arial.ttf", "DejaVuSans.ttf"):
+        try:
+            return ImageFont.truetype(name, px)
+        except OSError:
+            pass
+    return ImageFont.load_default()
+
+
+def relabel_snapshots():
+    """Rebuild the Kaggle snapshot figures with print-size labels (the originals use 8-px matplotlib titles).
+
+    The photos are cut out of the original PNGs unchanged; only the labels and the layout change. The duplicate
+    pairs are laid out two pairs per row so the figure fits on one page.
+    """
+    from PIL import ImageDraw
+    font = _font(26)
+    for stem, labels in DUP_LABELS.items():
+        src = np.asarray(Image.open(ASSETS / f"{stem}.png").convert("RGB"))
+        ink = src.min(axis=2) < 235
+        rows = _bands(ink.any(axis=1), 40)  # photo rows; the 9-px title rows are dropped
+        assert len(rows) == len(labels), (stem, len(rows))
+        tiles = []
+        for y0, y1 in rows:
+            cols = _bands(ink[y0:y1].any(axis=0), 40)
+            assert len(cols) == 2, (stem, y0, cols)
+            tiles.append([src[y0:y1, x0:x1] for x0, x1 in cols])
+        tw = max(t.shape[1] for pair in tiles for t in pair)
+        lab_h, gap, pair_gap, row_gap = 36, 10, 46, 22
+        n_rows = (len(tiles) + 1) // 2
+        row_h = [max(t.shape[0] for pair in tiles[2 * r:2 * r + 2] for t in pair) for r in range(n_rows)]
+        W = 4 * tw + 2 * gap + pair_gap
+        out = Image.new("RGB", (W, sum(row_h) + n_rows * lab_h + (n_rows - 1) * row_gap), "white")
+        draw = ImageDraw.Draw(out)
+        y = 0
+        for r in range(n_rows):
+            for j, (pair, lab) in enumerate(zip(tiles[2 * r:2 * r + 2], labels[2 * r:2 * r + 2])):
+                for c, (t, name) in enumerate(zip(pair, lab[:2])):
+                    x = j * (2 * tw + gap + pair_gap) + c * (tw + gap)
+                    ds, split = name.split("/")
+                    draw.text((x + tw / 2, y + lab_h / 2), f"{ds.upper()} {split} · d = {lab[2]}", fill="black",
+                              font=font, anchor="mm")
+                    out.paste(Image.fromarray(t), (x + (tw - t.shape[1]) // 2, y + lab_h + (row_h[r] - t.shape[0]) // 2))
+            if r < n_rows - 1:  # thin rule between pair rows
+                yy = y + lab_h + row_h[r] + row_gap // 2
+                draw.line([(0, yy), (W, yy)], fill=(215, 215, 215), width=1)
+            y += lab_h + row_h[r] + row_gap
+        x_mid = 2 * tw + gap + pair_gap // 2  # thin rule between the two pairs of a row
+        draw.line([(x_mid, 0), (x_mid, out.height)], fill=(215, 215, 215), width=1)
+        out.save(ASSETS / f"{stem}_print.png")
+
+    src = np.asarray(Image.open(ASSETS / "snap_enhancers_grid.png").convert("RGB"))
+    ink = src.min(axis=2) < 235
+    rows = _bands(ink.any(axis=1), 40)
+    body = src[rows[0][0]:]  # everything below the original title row
+    cols = _bands(ink[rows[1][0]:rows[1][1]].any(axis=0), 40)  # the full-width second row gives the column centres
+    assert len(cols) == len(GRID_LABELS), cols
+    lab_h = 44
+    out = Image.new("RGB", (src.shape[1], body.shape[0] + lab_h), "white")
+    out.paste(Image.fromarray(body), (0, lab_h))
+    draw = ImageDraw.Draw(out)
+    for (x0, x1), name in zip(cols, GRID_LABELS):
+        draw.text(((x0 + x1) / 2, lab_h / 2), name, fill="black", font=_font(28), anchor="mm")
+    out.save(ASSETS / "snap_enhancers_grid_print.png")
+
+
 # ===================================================================== build
 def build(out_docx: Path):
     blocks = content()
@@ -1018,7 +1102,10 @@ def build(out_docx: Path):
     sec._sectPr.append(pg)
     doc.sections[0].footer.is_linked_to_previous = False
 
-    chapter, fig_n, tab_n, first_h1 = 0, 0, 0, True
+    chapter, fig_n, tab_n, lst_n, first_h1 = 0, 0, 0, 0, True
+    body = doc.sections[-1]
+    # tallest picture that still leaves room for a two-line caption on the same page
+    max_h = (body.page_height - body.top_margin - body.bottom_margin) / 914400 - 0.8
     for b in blocks:
         kind = b[0]
         if kind in ("h1", "h1u"):
@@ -1029,7 +1116,7 @@ def build(out_docx: Path):
             add_rich(p, b[1], size=16)
             if kind == "h1":
                 chapter += 1
-                fig_n = tab_n = 0
+                fig_n = tab_n = lst_n = 0
         elif kind == "h2":
             p = doc.add_paragraph(style="Heading 2")
             add_rich(p, b[1], size=13)
@@ -1074,6 +1161,8 @@ def build(out_docx: Path):
                 print(f"  ! missing figure {path}")
                 continue
             fig_n += 1
+            with Image.open(path) as im:
+                w = min(w, max_h * im.width / im.height)
             p = doc.add_paragraph(style="Caption FCV")
             p.paragraph_format.keep_with_next = True
             p.add_run().add_picture(str(path), width=Inches(w))
@@ -1086,19 +1175,24 @@ def build(out_docx: Path):
                 print(f"  ! missing figure {tall}")
                 continue
             parts = split_tall(tall)
+            fig_n += 1  # one figure number for all parts of a split screenshot
             for k, part in enumerate(parts):
-                fig_n += 1
+                with Image.open(part) as im:
+                    w = min(6.0, max_h * im.width / im.height)
                 p = doc.add_paragraph(style="Caption FCV")
                 p.paragraph_format.keep_with_next = True
-                p.add_run().add_picture(str(part), width=Inches(6.0))
+                p.add_run().add_picture(str(part), width=Inches(w))
                 c = doc.add_paragraph(style="Caption FCV")
+                label = f"Figure {chapter}.{fig_n}" + (" (continued)" if k else "")
                 part_txt = f" (part {k + 1} of {len(parts)})" if len(parts) > 1 else ""
-                add_rich(c, f"Figure {chapter}.{fig_n}: {cap}{part_txt}.", size=10, base_italic=True)
+                add_rich(c, f"{label}: {cap}{part_txt}.", size=10, base_italic=True)
         elif kind == "code":
             _, cap, code = b
-            fig_n += 1
+            lst_n += 1
             p = doc.add_paragraph(style="Code FCV")
             p.paragraph_format.left_indent = Inches(0.1)
+            p.paragraph_format.keep_together = True  # never split a listing across pages
+            p.paragraph_format.keep_with_next = True  # and keep it with its caption
             shade(p._p, "F4F4F2")
             lines = code.splitlines()
             for k, line in enumerate(lines):
@@ -1107,7 +1201,7 @@ def build(out_docx: Path):
                 if k < len(lines) - 1:
                     r.add_break()
             c = doc.add_paragraph(style="Caption FCV")
-            add_rich(c, f"Listing {chapter}.{fig_n}: {cite(cap)}", size=10, base_italic=True)
+            add_rich(c, f"Listing {chapter}.{lst_n}: {cite(cap)}", size=10, base_italic=True)
         elif kind == "refs":
             for k in order:
                 p = doc.add_paragraph(style="Body FCV")
@@ -1163,5 +1257,6 @@ if __name__ == "__main__":
         out = out.with_name(out.stem + "_new.docx")
         print(f"  ! report is open in another program; writing {out.name} instead")
     make_pipeline_figure(ASSETS / "pipeline.png")
+    relabel_snapshots()
     build(out)
     word_finalize(out)

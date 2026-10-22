@@ -10,7 +10,10 @@ const VIEW = $("#view");
 async function api(url, opts) {
   const r = await fetch(url, opts);
   if (!r.ok) {
-    const e = new Error((await r.text()) || r.statusText);
+    const text = await r.text();
+    let msg = text || r.statusText;
+    try { msg = JSON.parse(text).detail || msg; } catch (_) { /* plain-text error */ }
+    const e = new Error(msg);
     e.status = r.status;
     throw e;
   }
@@ -232,7 +235,10 @@ async function pageLab(id) {
     S.p[inp.dataset.p] = +inp.value;
     inp.nextElementSibling.textContent = inp.value;
     clearTimeout(labTimer);
-    labTimer = setTimeout(() => labResults(RENDER_ID), 280);
+    labTimer = setTimeout(() => labResults(RENDER_ID).catch((e) => {
+      const out = $("#labout");
+      if (out) out.innerHTML = `<div class="empty">Something went wrong: ${esc(e.message)}</div>`;
+    }), 280);
   });
   await labResults(id);
 }
@@ -362,7 +368,11 @@ async function render() {
     const fn = { overview: pageOverview, enhance: pageEnhance, quality: pageQuality, lab: pageLab, detect: pageDetect }[S.page];
     await fn(id);
   } catch (e) {
-    if (id === RENDER_ID) VIEW.innerHTML = `<div class="empty">Something went wrong: ${esc(e.message)}</div>`;
+    if (id !== RENDER_ID) return;
+    VIEW.innerHTML = e.status === 404 && /unknown image/.test(e.message)
+      ? `<div class="empty">This image is not on the server any more. Uploaded images are kept only until the server restarts; choose a sample or upload it again.</div>`
+      : `<div class="empty">Something went wrong: ${esc(e.message)}</div>`;
+    return settle(id);
   }
   if (S.page !== "lab") await settle(id);
 }
