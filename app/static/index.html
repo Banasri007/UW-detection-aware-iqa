@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UW·IQA — Detection-aware underwater image quality</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230a0a0a'/%3E%3Cpath d='M16 2a14 14 0 0 1 0 28z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-ready="0">
+  <header class="topbar">
+    <a class="brand" href="#/overview">
+      <span class="mark" aria-hidden="true"></span>
+      <span class="brand-name">UW·IQA</span>
+      <span class="brand-sub">Detection-aware underwater image quality</span>
+    </a>
+    <nav class="nav" id="nav">
+      <a data-page="overview" href="#/overview"><span>00</span>Overview</a>
+      <a data-page="enhance" href="#/enhance"><span>01</span>Enhancement</a>
+      <a data-page="quality" href="#/quality"><span>02</span>Quality</a>
+      <a data-page="lab" href="#/lab"><span>03</span>Lab 1–5</a>
+      <a data-page="detect" href="#/detect"><span>04</span>Detection</a>
+    </nav>
+    <div class="sys" id="sys"></div>
+  </header>
+
+  <div class="shell">
+    <aside class="picker" id="picker">
+      <div class="picker-head">
+        <span class="eyebrow">Images</span>
+        <span class="count" id="pickcount"></span>
+      </div>
+      <label class="drop" id="drop">
+        <input type="file" id="file" accept="image/*">
+        <span class="drop-icon" aria-hidden="true">＋</span>
+        <span><strong>Upload an image</strong><br><span class="muted">or drop it here</span></span>
+      </label>
+      <div class="legend">
+        <span class="tag tag-helps">helps</span>
+        <span class="tag tag-hurts">hurts</span>
+        <span class="tag tag-flat">noise</span>
+        <span class="muted small">best enhancer vs raw</span>
+      </div>
+      <div class="thumbs" id="thumbs"></div>
+    </aside>
+    <main class="main" id="view"></main>
+  </div>
+
+  <div class="lightbox" id="lightbox" hidden>
+    <button class="lb-close" aria-label="Close">×</button>
+    <figure><div class="lb-media"><img alt=""></div><figcaption></figcaption></figure>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -89,7 +89,7 @@ REFS = {
     "harris1988": 'C. Harris and M. Stephens, "A combined corner and edge detector," in *Proc. Alvey Vision Conference*, 1988, pp. 147–151.',
     "dalal2005hog": 'N. Dalal and B. Triggs, "Histograms of oriented gradients for human detection," in *Proc. IEEE CVPR*, 2005, pp. 886–893.',
     "ojala2002lbp": 'T. Ojala, M. Pietikäinen and T. Mäenpää, "Multiresolution gray-scale and rotation invariant texture classification with local binary patterns," *IEEE Trans. Pattern Anal. Mach. Intell.*, vol. 24, no. 7, pp. 971–987, 2002.',
-    "streamlit": 'Streamlit Inc., "Streamlit: a faster way to build and share data apps," 2024. [Online]. Available: https://streamlit.io',
+    "fastapi": 'S. Ramírez, "FastAPI," 2018. [Online]. Available: https://fastapi.tiangolo.com',
     "opencv": 'G. Bradski, "The OpenCV library," *Dr. Dobb\'s Journal of Software Tools*, 2000.',
 }
 
@@ -140,7 +140,7 @@ def content():
       "change far better than any NR-IQA metric (Spearman 0.32 vs. at most 0.13), but selective enhancement driven by it "
       "at best matches never enhancing, whereas choosing the enhancer with the best NR-IQA gain, as common practice "
       "suggests, costs up to 0.17 mAP. The project also shows that the public re-split of RUOD leaks near-duplicate "
-      "frames across its splits and overlaps heavily with DUO. An interactive Streamlit application demonstrates the "
+      "frames across its splits and overlaps heavily with DUO. An interactive web application demonstrates the "
       "enhancers, quality scores, Lab 1–5 image operations and detections on individual images.")
     P("**Keywords:** underwater image enhancement, no-reference image quality assessment, object detection, "
       "task-aware quality, benchmark, OpenCV.")
@@ -188,7 +188,7 @@ def content():
          "A detection-aware predictor that sees only the raw image, compared with NR-IQA metrics as utility predictors, "
          "and a dataset-level evaluation of selective-enhancement policies with an oracle upper bound and a noise-only "
          "control.",
-         "An interactive Streamlit demo application that applies the enhancers, quality metrics, Lab 1–5 operations and "
+         "An interactive web demo application that applies the enhancers, quality metrics, Lab 1–5 operations and "
          "the trained detector to individual images."])
     H2("1.6 Organisation of the report")
     P("Chapter 2 states the problem, objectives and system requirements. Chapter 3 describes the methodology and the "
@@ -231,7 +231,7 @@ def content():
          "Done on duplicate-free DUO"],
         ["O6", "Selective enhancement (practical validation)", "Dataset mAP of per-image policies",
          "Done, with oracle and noise controls"],
-        ["O7", "Interactive demo application", "Working UI on real samples", "Done (Streamlit)"],
+        ["O7", "Interactive demo application", "Working UI on real samples", "Done (web app)"],
     ], widths=[0.45, 2.0, 2.2, 1.85], size=9.5)
     H2("2.4 Changes from the synopsis")
     P("Some plans from the Phase-I synopsis were adapted during the project, for reasons of data access, software "
@@ -262,7 +262,8 @@ def content():
         ["Ultralytics", "8.4", "YOLO11-s training and inference [@jocher2023ultralytics]"],
         ["IQA-PyTorch (pyiqa)", "0.1.16", "Deep NR-IQA metrics [@chen2022iqapytorch]"],
         ["scikit-learn", "1.6", "Ridge and logistic heads, AUROC, balanced accuracy"],
-        ["Streamlit", "1.52", "Demo application UI [@streamlit]"],
+        ["FastAPI / Uvicorn", "0.104 / 0.x", "Demo application back end (JSON API) [@fastapi]"],
+        ["HTML5, CSS3, JavaScript", "–", "Demo application front end (no framework, SVG charts)"],
         ["Matplotlib / Playwright", "3.10 / 1.x", "Figures / application screenshots"],
         ["Kaggle Notebooks, Git, GitHub, VS Code", "–", "Compute, version control, development"],
     ], widths=[2.0, 1.6, 2.9], size=9.5)
@@ -385,10 +386,15 @@ def content():
       "true AP, an upper bound) and a *noise oracle* that chooses between raw and the null re-encode (showing how much "
       "gain pure label noise produces). Differences are tested with a paired bootstrap over images.")
     H2("3.12 Demo application design")
-    P("The demo is a Streamlit [@streamlit] web application (app/app.py) that runs locally on the CPU. The user picks "
-      "one of twelve held-out RUOD test images, chosen to include cases where an enhancer helps, where all enhancers "
-      "hurt, and where differences are within noise, or uploads any underwater image. The image is decoded and resized "
-      "exactly as in the label pipeline, and four pages present the analysis:")
+    P("The demo is a local web application with two parts. A FastAPI [@fastapi] back end (app/server.py) exposes a "
+      "JSON API around the project code: the enhancers, UIQM/UCIQE, the Lab 1–5 operations (app/vision.py) and the "
+      "frozen detector, all running on the CPU. A hand-written front end (app/static: HTML, CSS and JavaScript, no "
+      "framework) presents the results in a black-and-white design: a black navigation bar, an image picker, large "
+      "headings, monospaced numbers, greyscale SVG charts, detection boxes drawn as white outlines, and ▲/▼ markers "
+      "instead of colours for 'helps' and 'hurts'. Sliders recompute results live, and any image can be enlarged.")
+    P("The user picks one of twelve held-out RUOD test images, chosen to include cases where an enhancer helps, where "
+      "all enhancers hurt, and where differences are within noise, or uploads any underwater image. The image is "
+      "decoded and resized exactly as in the label pipeline, and four pages present the analysis:")
     BUL(["**Enhancement:** the raw image and the five enhanced versions with their colour histograms.",
          "**Quality scores:** live UIQM (with its UICM, UISM and UIConM components) and UCIQE for every version, next to "
          "the true detection change from the study's labels and the benchmark's reliability table.",
@@ -396,11 +402,20 @@ def content():
          "table comparing low-level features of all versions.",
          "**Detection:** the trained YOLO11-s detector on every version, with boxes drawn by cv2.rectangle, and, for "
          "sample images with ground truth, the per-image AP, AP50, F1 and ΔAP of each enhancer."])
+    TAB("Demo application API.", ["Endpoint", "Returns"], [
+        ["GET /api/status", "available samples, detector / FUnIE-GAN status, benchmark table"],
+        ["POST /api/upload", "an id for an uploaded image"],
+        ["GET /api/enhance/{id}", "the six versions and their colour histograms"],
+        ["GET /api/quality/{id}", "UIQM components and UCIQE of every version, study ΔAP"],
+        ["GET /api/lab/{id}/{1–5}", "Lab 1–5 operation results for a chosen version and parameters"],
+        ["GET /api/features/{id}", "low-level feature statistics of every version"],
+        ["GET /api/detect/{id}", "detections of every version, per-image AP, AP50, F1 and ΔAP"],
+    ], widths=[2.2, 4.3], size=9.5)
     P("Expensive results are cached per image, and the model weights, FUnIE-GAN and the samples are packed by a Kaggle "
       "notebook into a single asset folder.")
     H2("3.13 Implementation and reproducibility")
     P("All code is in a Python package (src/uwiqa) with scripts and seven thin Kaggle notebooks; each notebook pulls the "
-      "latest code from GitHub and calls one-line scripts, and long jobs are sharded and resumable. 64 unit tests check "
+      "latest code from GitHub and calls one-line scripts, and long jobs are sharded and resumable. 74 unit tests check "
       "the metrics, correlation statistics, splits, detection AP and Lab operations.")
     TAB("Kaggle notebooks.", ["Notebook", "Content", "Hardware / time"], [
         ["01", "UID2021 download, 16 NR-IQA metrics, benchmark, stress test, diagnostics", "T4 / ≈1.5 h"],
@@ -547,15 +562,16 @@ def content():
     H2("4.8 Demo application snapshots")
     P("The following snapshots show the user interface of the demo application (Section 3.12) on held-out RUOD "
       "test images from the bundled samples.")
-    for name, cap in [("ui_overview", "Overview page with navigation, image source selection and key results."),
-                      ("ui_enhance", "Enhancement page: raw image, five enhanced versions and colour histograms."),
-                      ("ui_quality", "Quality page: live UIQM components and UCIQE next to the true detection change, "
-                                     "and the benchmark reliability table.")]:
-        FIG(ASSETS / f"{name}.png", f"Application snapshot: {cap}", 6.4)
-    B.append(("lab_parts", "ui_lab", "Application snapshot: Lab 1–5 operations page"))
-    for name, cap in [("ui_detect", "Detection page: YOLO11-s detections on every version with per-image AP and ΔAP."),
-                      ("ui_detect_2", "Detection page for a second sample image.")]:
-        FIG(ASSETS / f"{name}.png", f"Application snapshot: {cap}", 6.4)
+    for name, cap in [
+            ("ui_overview", "Overview page with the navigation bar, image picker and key results"),
+            ("ui_enhance", "Enhancement page: raw image, five enhanced versions and colour histograms"),
+            ("ui_quality", "Quality page: live UIQM components and UCIQE next to the true detection change, "
+                           "and the benchmark reliability table"),
+            ("ui_labS", "Lab page, summary tab: low-level features of every version"),
+            ("ui_detect", "Detection page: YOLO11-s detections on every version with per-image AP and ΔAP"),
+            ("ui_detect_2", "Detection page for a second sample image")]:
+        B.append(("shot", name, f"Application snapshot: {cap}"))
+    P("Screenshots of the Lab 1–5 pages appear with the corresponding sections of Chapter 5.")
     H2("4.9 Summary of findings")
     BUL(["Only the underwater-trained URanker tracks human opinion reasonably (SRCC 0.62); in-air deep metrics cannot rank "
          "enhancements of one scene, and UCIQE can be gamed by over-processing.",
@@ -615,6 +631,7 @@ def content():
          src(registry.resize_long_side) + "\n\n" + src(registry._jpeg_roundtrip))
     CODE("Rotation and drawing rectangles in the demo (app/vision.py).",
          src(V.rotate) + "\n\n" + code_lines(V.draw_boxes, "out = img.copy()", "cv2.rectangle(out, (x1, y1)"))
+    B.append(("shot", "ui_lab1", "Application snapshot: demo, Lab 1 tab (image information, pixel inspector, grayscale, rotation, resizing)"))
     H2("5.2 Lab 2: Image enhancement")
     P("Two of the five enhancers are Lab 2 techniques. CLAHE is a local, contrast-limited form of histogram "
       "equalisation applied to the lightness channel; gray-world is a colour-balance correction. The fusion enhancer "
@@ -626,6 +643,7 @@ def content():
          src(classical.clahe) + "\n\n" + src(classical._gray_world))
     CODE("Michelson-type block contrast in UIQM (src/uwiqa/metrics/uiqm.py).", src(uiqm_mod.uiconm))
     CODE("Histogram equalisation and gamma in the demo (app/vision.py).", src(V.hist_equalize) + "\n\n" + src(V.gamma))
+    B.append(("shot", "ui_lab2", "Application snapshot: demo, Lab 2 tab (negative, log, gamma, contrast stretching, histogram equalisation, CLAHE)"))
     H2("5.3 Lab 3: Image filtering")
     P("UIQM measures sharpness from the Sobel gradient magnitude of each colour channel. The fusion enhancer uses "
       "Gaussian blurring (for its sharpened input and saliency map) and the Laplacian (for its contrast weight), and "
@@ -636,6 +654,7 @@ def content():
     CODE("Sobel gradient magnitude in UIQM's sharpness term (src/uwiqa/metrics/uiqm.py).", src(uiqm_mod._sobel_mag))
     CODE("Unsharp masking distortion (src/uwiqa/enhance/sweeps.py) and box-filter guided filter in UDCP "
          "(src/uwiqa/enhance/classical.py).", src(sweeps.unsharp) + "\n\n" + src(classical._guided_filter))
+    B.append(("shot", "ui_lab3", "Application snapshot: demo, Lab 3 tab (box, Gaussian and median filters, Sobel, Laplacian, Canny, unsharp masking)"))
     H2("5.4 Lab 4: Image segmentation")
     P("Thresholding appears in three places: each dHash bit is a binary threshold of a pixel difference, UDCP selects "
       "the brightest 0.1% of its dark channel to estimate the background light, and the noise threshold τ turns the "
@@ -645,6 +664,7 @@ def content():
     CODE("Difference hash: binary comparisons of neighbouring pixels (src/uwiqa/data/dedup.py).", src(dedup.dhash))
     CODE("Otsu thresholding and k-means colour segmentation in the demo (app/vision.py).",
          src(V.otsu) + "\n\n" + src(V.kmeans_segment))
+    B.append(("shot", "ui_lab4", "Application snapshot: demo, Lab 4 tab (Otsu and adaptive thresholding, k-means segmentation)"))
     H2("5.5 Lab 5: Feature extraction")
     P("Feature extraction is central to the predictor: every raw image is represented by a frozen deep feature vector "
       "(CLIP, DINOv2 or ResNet-18), the representation-learning view of Lab 5. UIQM and UCIQE are task-specific "
@@ -656,6 +676,7 @@ def content():
     CODE("Low-level feature summary used to compare raw and enhanced images in the demo (app/vision.py).",
          src(V.feature_summary))
     CODE("Per-image AP from precision and recall (src/uwiqa/detect/metrics.py).", src(dm._ap_from_tp))
+    B.append(("shot", "ui_lab5", "Application snapshot: demo, Lab 5 tab (SIFT, FAST, Harris, HOG, LBP)"))
     H2("5.6 Lab topics not used")
     P("Video reading and writing (Lab 1), histogram specification (Lab 2), the Hough transform, region growing and region "
       "splitting (Lab 4) were not needed for this project; the image datasets are still images, and object localisation "
@@ -875,30 +896,24 @@ def make_pipeline_figure(path: Path):
     plt.close(fig)
 
 
-def split_tall(path: Path, max_ratio: float = 1.25, crop_sidebar: bool = True) -> list[Path]:
-    """Crop the sidebar and cut a tall screenshot at blank rows into parts of height <= max_ratio * width."""
+def split_tall(path: Path, max_ratio: float = 1.3) -> list[Path]:
+    """Cut a tall screenshot at blank rows into equal-ish parts of height <= max_ratio * width."""
     im = np.asarray(Image.open(path).convert("RGB"))
-    if crop_sidebar:
-        im = im[:, int(im.shape[1] * 0.235):]
+    rows = np.where(im.std(axis=(1, 2)) >= 1.0)[0]
+    im = im[: rows[-1] + 24] if len(rows) else im  # trim the blank bottom margin
     h, w = im.shape[:2]
-    rowstd = im.std(axis=(1, 2))
-    blank = rowstd < 1.0
-    parts, y = [], 0
-    limit = int(max_ratio * w)
-    while y < h:
-        if h - y <= limit:
-            end = h
-        else:
-            cand = np.where(blank[y + limit // 2: y + limit])[0]
-            end = y + limit // 2 + (cand[-1] if len(cand) else limit // 2)
-        part = im[y:end]
-        if part.std() > 2:  # skip empty strips
-            parts.append(part)
-        y = end
+    n = int(np.ceil(h / (max_ratio * w)))
+    blank = np.where(im.std(axis=(1, 2)) < 1.0)[0]
+    cuts = [0]
+    for k in range(1, n):
+        target = k * h // n
+        near = blank[(blank > cuts[-1]) & (np.abs(blank - target) < 0.2 * w)]
+        cuts.append(int(near[np.argmin(np.abs(near - target))]) if len(near) else target)
+    cuts.append(h)
     out = []
-    for k, part in enumerate(parts):
+    for k in range(n):
         p = path.with_name(f"{path.stem}_part{k + 1}.png")
-        Image.fromarray(part).save(p)
+        Image.fromarray(im[cuts[k]:cuts[k + 1]]).save(p)
         out.append(p)
     return out
 
@@ -1063,7 +1078,7 @@ def build(out_docx: Path):
             p.add_run().add_picture(str(path), width=Inches(w))
             c = doc.add_paragraph(style="Caption FCV")
             add_rich(c, f"Figure {chapter}.{fig_n}: {cite(cap)}", size=10, base_italic=True)
-        elif kind == "lab_parts":
+        elif kind == "shot":
             _, stem, cap = b
             tall = ASSETS / f"{stem}.png"
             if not tall.exists():
@@ -1076,8 +1091,8 @@ def build(out_docx: Path):
                 p.paragraph_format.keep_with_next = True
                 p.add_run().add_picture(str(part), width=Inches(6.0))
                 c = doc.add_paragraph(style="Caption FCV")
-                add_rich(c, f"Figure {chapter}.{fig_n}: {cap} (part {k + 1} of {len(parts)}).", size=10,
-                         base_italic=True)
+                part_txt = f" (part {k + 1} of {len(parts)})" if len(parts) > 1 else ""
+                add_rich(c, f"Figure {chapter}.{fig_n}: {cap}{part_txt}.", size=10, base_italic=True)
         elif kind == "code":
             _, cap, code = b
             fig_n += 1
@@ -1137,8 +1152,15 @@ def word_finalize(docx_path: Path):
 
 
 if __name__ == "__main__":
-    pipe = ASSETS / "pipeline.png"
-    make_pipeline_figure(pipe)
-    out = HERE / "FCV_MiniProject_Report.docx"
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", default=str(HERE / "FCV_MiniProject_Report.docx"))
+    out = Path(ap.parse_args().out)
+    try:
+        out.open("ab").close()
+    except PermissionError:
+        out = out.with_name(out.stem + "_new.docx")
+        print(f"  ! report is open in another program; writing {out.name} instead")
+    make_pipeline_figure(ASSETS / "pipeline.png")
     build(out)
     word_finalize(out)

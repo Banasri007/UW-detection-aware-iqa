@@ -1,9 +1,10 @@
 """Capture demo-app screenshots for the report (Chapter 4) with Playwright + installed Edge.
 
-Start the app first:   streamlit run app/app.py --server.headless true
+Start the app first:   python app/server.py
 Then:                  python report/capture_screenshots.py [--samples sample_00 sample_04]
-Each view is opened by URL parameters, the script waits until Streamlit has finished running,
-then saves report/assets/ui_<name>.png.
+Each view is opened by URL, the script waits until the page sets body[data-ready="1"]
+(all data fetched, all images decoded), then saves a full-page report/assets/ui_<name>.png.
+The overview keeps the image picker; the other views hide it (and the page footer) so the content fills the shot.
 """
 import argparse
 import time
@@ -12,22 +13,10 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 OUT = Path(__file__).resolve().parent / "assets"
-URL = "http://localhost:8501/"
-
-
-def wait_until_idle(page, timeout=240):
-    """Streamlit shows a 'Running...' status widget while the script executes."""
-    page.wait_for_selector('[data-testid="stAppViewContainer"]', timeout=timeout * 1000)
-    t0, quiet = time.time(), 0
-    while time.time() - t0 < timeout:
-        running = page.locator('[data-testid="stStatusWidget"]').count() > 0
-        skeleton = page.locator('[data-testid="stSkeleton"]').count() > 0
-        spinner = page.locator('[data-testid="stSpinner"]').count() > 0
-        quiet = quiet + 1 if not (running or skeleton or spinner) else 0
-        if quiet >= 4:  # ~2 s without activity
-            return
-        time.sleep(0.5)
-    raise TimeoutError("app did not finish rendering")
+URL = "http://127.0.0.1:8000/"
+HIDE_FOOT = "footer.foot { display: none !important; }"
+HIDE_PICKER = HIDE_FOOT + (".picker { display: none !important; } .main { max-width: none !important; }"
+                           ".shell { grid-template-columns: 1fr !important; background: var(--bg) !important; }")
 
 
 def main():
@@ -37,27 +26,28 @@ def main():
     ap.add_argument("--channel", default="msedge")
     args = ap.parse_args()
     s0 = args.samples[0]
-    views = [
-        ("overview", f"page=overview&sample={s0}", 1250),
-        ("enhance", f"page=enhance&sample={s0}", 1350),
-        ("quality", f"page=quality&sample={s0}", 1500),
-        ("lab", f"page=lab&sample={s0}&variant=raw", 4300),
-        ("detect", f"page=detect&sample={s0}", 1500),
-    ] + [(f"detect_{k + 2}", f"page=detect&sample={s}", 1500) for k, s in enumerate(args.samples[1:])]
+    views = [("overview", f"#/overview?img={s0}"), ("enhance", f"#/enhance?img={s0}"),
+             ("quality", f"#/quality?img={s0}")]
+    views += [(f"lab{k}", f"#/lab?img={s0}&lab={k}&v=raw") for k in ("1", "2", "3", "4", "5", "S")]
+    views += [("detect", f"#/detect?img={s0}")]
+    views += [(f"detect_{k + 2}", f"#/detect?img={s}") for k, s in enumerate(args.samples[1:])]
     OUT.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as p:
         browser = p.chromium.launch(channel=args.channel, headless=True)
-        for name, query, height in views:
-            ctx = browser.new_context(viewport={"width": 1440, "height": height}, device_scale_factor=1.5,
-                                      color_scheme="light")
-            page = ctx.new_page()
-            page.goto(URL + "?" + query, wait_until="networkidle")
-            wait_until_idle(page)
-            time.sleep(1.5)  # let images and charts paint
+        ctx = browser.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=1.5,
+                                  color_scheme="light")
+        page = ctx.new_page()
+        for name, route in views:
+            side = name == "overview"
+            page.set_viewport_size({"width": 1440 if side else 1180, "height": 900})
+            page.goto(URL + route, wait_until="domcontentloaded")
+            page.wait_for_function("document.body.dataset.ready === '1'", timeout=300_000)
+            page.add_style_tag(content=HIDE_FOOT if side else HIDE_PICKER)
+            page.evaluate("document.fonts.ready")
+            time.sleep(0.8)
             f = OUT / f"ui_{name}.png"
-            page.screenshot(path=str(f))
+            page.screenshot(path=str(f), full_page=True)
             print(f"saved {f.name}")
-            ctx.close()
         browser.close()
 
 
