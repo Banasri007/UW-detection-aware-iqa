@@ -167,12 +167,27 @@ NB06 = [
         "stress/o2_uid2021_raw.csv stress/o2_uid2021_summary.csv && ls -lh /kaggle/working/paper_results.zip"),
 ]
 
+NB07 = [
+    (M, "# 07 — Pack assets for the local demo app (CPU, ~5 min)\n\n"
+        "**Settings:** Accelerator **None** (CPU), Internet **On**.\n"
+        "**Inputs (Add Input):**\n"
+        "1. *Underwater Domain in ODverse33* (skycol): the sample images\n"
+        "2. **Your Work → notebook 05** (fcv-project-5): detector weights, splits and utility labels\n\n"
+        "Run all cells (interactive is fine, it is short), then download `demo_assets.zip` from the "
+        "**Output** panel (`/kaggle/working/demo_assets.zip`) and unzip it into the project's `app/assets/`.\n"
+        + PERSIST),
+    (C, setup()),
+    (C, "!python scripts/get_enhancers.py"),
+    (C, "!python scripts/pack_demo_assets.py"),
+]
+
 if __name__ == "__main__":
     for name, cells, acc in [("01_kaggle_benchmark_uid2021.ipynb", NB01, "gpu"),
                              ("03_kaggle_splits_and_detector.ipynb", NB03, "gpu"),
                              ("04_kaggle_utility_labels.ipynb", NB04, "gpu"),
                              ("05_kaggle_predictor_and_policies.ipynb", NB05, "gpu"),
-                             ("06_kaggle_policies_and_figures.ipynb", NB06, "none")]:
+                             ("06_kaggle_policies_and_figures.ipynb", NB06, "none"),
+                             ("07_kaggle_demo_assets.ipynb", NB07, "none")]:
         p = NB_DIR / name
         json.dump(nb(cells, acc), open(p, "w", encoding="utf-8"), indent=1)
         print("wrote", p)

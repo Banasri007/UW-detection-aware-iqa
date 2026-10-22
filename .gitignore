@@ -13,3 +13,9 @@ __pycache__/
 runs/
 _uwiqa_check.png
 configs/local.yaml
+
+# demo assets (dataset licences) and generated report artefacts
+app/assets/
+report/assets/ui_*.png
+report/FCV_MiniProject_Report.docx
+report/FCV_MiniProject_Report.pdf
